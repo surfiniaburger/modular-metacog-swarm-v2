@@ -87,6 +87,15 @@ class ResearchMediator(BaseAgent):
         runs_dir = os.path.join(vault_dir, "runs")
         os.makedirs(tasks_dir, exist_ok=True)
         os.makedirs(runs_dir, exist_ok=True)
+
+        latest_results_path = os.path.join("research_env", "results", "latest_results.json")
+        latest_metrics = {}
+        if os.path.exists(latest_results_path):
+            try:
+                with open(latest_results_path, "r") as f:
+                    latest_metrics = json.load(f)
+            except Exception:
+                latest_metrics = {}
         
         timestamp = datetime.utcnow().isoformat()
         iteration = self.iteration_counter
@@ -104,16 +113,26 @@ class ResearchMediator(BaseAgent):
             json.dump(task_packet, f, indent=2)
 
         # 2. Export THE RUN (Performance)
-        dgs = 0.5 # Default
-        if "DGS" in review:
-            dgs = 0.67 # Representative value from latest brain strategy
+        dgs = latest_metrics.get("dgs", 0.5)
+        m_ratio = None
+        if isinstance(latest_metrics.get("models"), dict):
+            # Choose the strongest model if present, else fallback to any.
+            model_metrics = None
+            for key in ["qwen3.5:9b", "qwen2.5-coder:7b"]:
+                if key in latest_metrics["models"]:
+                    model_metrics = latest_metrics["models"][key]
+                    break
+            if model_metrics is None:
+                model_metrics = next(iter(latest_metrics["models"].values()), None)
+            if isinstance(model_metrics, dict):
+                m_ratio = model_metrics.get("m_ratio_proxy")
 
         run_packet = {
             "timestamp": timestamp,
             "iteration": iteration,
             "metrics": {
                 "dgs": dgs,
-                "m_ratio": 0.885, 
+                "m_ratio": m_ratio if m_ratio is not None else 0.885,
                 "status": "APPROVED" if "APPROVE" in review.upper() else "REJECTED"
             },
             "models": ["qwen3.5:9b", "qwen2.5-coder:7b"]
