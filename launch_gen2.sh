@@ -12,6 +12,12 @@ kill_port() {
     echo "🧹 Freeing port $port (PID(s): $pids)..."
     kill $pids 2>/dev/null || true
     sleep 1
+    # Force kill if still listening
+    if lsof -ti tcp:"$port" >/dev/null 2>&1; then
+      echo "🧹 Forcing port $port to close..."
+      kill -9 $pids 2>/dev/null || true
+      sleep 1
+    fi
   fi
 }
 kill_port 8000
