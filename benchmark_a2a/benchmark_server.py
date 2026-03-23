@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import uvicorn
 
 from a2a.server.apps import A2AStarletteApplication
@@ -49,9 +50,11 @@ def main():
     parser = argparse.ArgumentParser(description="Run the A2A Metacognition Benchmark Server.")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host to bind")
     parser.add_argument("--port", type=int, default=8004, help="Port to bind")
+    parser.add_argument("--card-url", type=str, help="URL to advertise in the agent card")
     args = parser.parse_args()
 
-    app = create_app(host=args.host, port=args.port)
+    card_url = args.card_url or os.environ.get("CARD_URL")
+    app = create_app(host=args.host, port=args.port, card_url=card_url)
     logger.info(f"Benchmark Server serving on {args.host}:{args.port}")
     uvicorn.run(app, host=args.host, port=args.port)
 
