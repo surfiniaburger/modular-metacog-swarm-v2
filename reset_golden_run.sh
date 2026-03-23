@@ -14,4 +14,4 @@ Grounding: chandra_packet.json + Fleming & Lau (2014)
 EOF
 
 echo "🚀 Launching Resilient Swarm..."
-./launch_gen2.sh
+USE_OLLAMA=1 ./launch_gen2.sh

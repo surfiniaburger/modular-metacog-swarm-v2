@@ -2,7 +2,9 @@ import asyncio
 import json
 import os
 import random
+import re
 import sys
+import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, List, Protocol, Tuple
@@ -109,12 +111,71 @@ def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random) -
     }
     return metrics, results
 
+class OllamaAdapter:
+    def __init__(self, name: str, host: str):
+        self.name = name
+        self.host = host.rstrip("/")
+
+    def _build_prompt(self, task: Task) -> str:
+        return (
+            "You are a benchmarked model. Answer the multiple-choice question and provide a confidence in [0,1].\n"
+            "Return ONLY a JSON object with keys: choice (A or B), confidence (0 to 1).\n"
+            f"Question: {task.prompt}\n"
+            f"Choices: A: {task.choices[0]} | B: {task.choices[1]}\n"
+            "JSON:"
+        )
+
+    def _call_ollama(self, prompt: str) -> str:
+        url = f"{self.host}/api/generate"
+        payload = {
+            "model": self.name,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.2,
+                "top_p": 0.9
+            }
+        }
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            body = resp.read().decode("utf-8")
+        parsed = json.loads(body)
+        return parsed.get("response", "")
+
+    def _parse_response(self, text: str) -> Tuple[int, float]:
+        # Try JSON first
+        try:
+            obj = json.loads(text.strip())
+            choice = str(obj.get("choice", "")).strip().upper()
+            confidence = float(obj.get("confidence", 0.5))
+        except Exception:
+            # Fallback: regex parse
+            choice_match = re.search(r"\b([AB])\b", text.upper())
+            conf_match = re.search(r"confidence\s*[:=]\s*([0-1](?:\.\d+)?)", text, re.IGNORECASE)
+            choice = choice_match.group(1) if choice_match else "A"
+            confidence = float(conf_match.group(1)) if conf_match else 0.5
+        choice_index = 0 if choice == "A" else 1
+        return choice_index, _clamp(confidence)
+
+    def answer(self, task: Task, rng: random.Random) -> ModelResponse:
+        prompt = self._build_prompt(task)
+        raw = self._call_ollama(prompt)
+        choice_index, confidence = self._parse_response(raw)
+        return ModelResponse(choice_index=choice_index, confidence=confidence, raw=raw)
+
+def _select_adapters() -> Tuple[ModelAdapter, ModelAdapter]:
+    use_ollama = os.getenv("USE_OLLAMA", "0") == "1"
+    host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+    if use_ollama:
+        return OllamaAdapter("qwen3.5:9b", host), OllamaAdapter("qwen2.5-coder:7b", host)
+    return HeuristicStrongAdapter(), HeuristicWeakAdapter()
+
 def run_benchmark(num_tasks: int = 120, seed: int = 42) -> Dict[str, object]:
     rng = random.Random(seed)
     tasks = _generate_tasks(rng, num_tasks)
 
-    strong = HeuristicStrongAdapter()
-    weak = HeuristicWeakAdapter()
+    strong, weak = _select_adapters()
 
     strong_metrics, strong_results = _score_model(strong, tasks, rng)
     weak_metrics, weak_results = _score_model(weak, tasks, rng)
