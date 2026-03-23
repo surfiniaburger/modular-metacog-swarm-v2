@@ -194,9 +194,43 @@ class OllamaAdapter:
             # Timeout or transient failure; return neutral response to keep run moving.
             return ModelResponse(choice_index=0, confidence=0.5, raw="ERROR: timeout")
 
+class LiteLLMAdapter:
+    def __init__(self, name: str):
+        self.name = name
+
+    def _build_prompt(self, task: Task) -> str:
+        return (
+            "You are a benchmarked model. Answer the multiple-choice question and provide a confidence in [0,1].\n"
+            "Return ONLY a JSON object with keys: choice (A or B), confidence (0 to 1).\n"
+            f"Question: {task.prompt}\n"
+            f"Choices: A: {task.choices[0]} | B: {task.choices[1]}\n"
+            "JSON:"
+        )
+
+    def answer(self, task: Task, rng: random.Random) -> ModelResponse:
+        try:
+            from litellm import completion
+            prompt = self._build_prompt(task)
+            resp = completion(
+                model=self.name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                top_p=0.9,
+            )
+            content = resp.choices[0].message["content"]
+            choice_index, confidence = OllamaAdapter._parse_response(self, content)
+            return ModelResponse(choice_index=choice_index, confidence=confidence, raw=content)
+        except Exception:
+            return ModelResponse(choice_index=0, confidence=0.5, raw="ERROR: litellm")
+
 def _select_adapters() -> Tuple[ModelAdapter, ModelAdapter]:
     use_ollama = os.getenv("USE_OLLAMA", "0") == "1"
+    use_litellm = os.getenv("USE_LITELLM", "0") == "1"
     host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+    if use_litellm:
+        strong_name = os.getenv("BENCH_MODEL_STRONG", "ollama/qwen3.5:9b")
+        weak_name = os.getenv("BENCH_MODEL_WEAK", "ollama/qwen2.5-coder:7b")
+        return LiteLLMAdapter(strong_name), LiteLLMAdapter(weak_name)
     if use_ollama:
         return OllamaAdapter("qwen3.5:9b", host), OllamaAdapter("qwen2.5-coder:7b", host)
     return HeuristicStrongAdapter(), HeuristicWeakAdapter()

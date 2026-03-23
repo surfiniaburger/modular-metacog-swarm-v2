@@ -37,6 +37,31 @@ async def main():
     )
     
     # 5. Iteration Loop
+    pending_bench_tasks = []
+
+    async def fire_a2a_benchmark(iteration: int):
+        bench_url = os.getenv("A2A_BENCH_URL", "http://localhost:8004")
+        bench_tasks = int(os.getenv("BENCH_NUM_TASKS", "10"))
+        bench_seed = int(os.getenv("BENCH_SEED", "42"))
+        bench_full_log = os.getenv("BENCH_LOG_FULL", "0") == "1"
+        bench_timeout = int(os.getenv("A2A_BENCH_TIMEOUT", "600"))
+        request_payload = json.dumps({
+            "num_tasks": bench_tasks,
+            "seed": bench_seed,
+            "full_log": bench_full_log,
+            "iteration": iteration
+        })
+        try:
+            response = await send_message(
+                message=request_payload,
+                base_url=bench_url,
+                timeout=bench_timeout,
+            )
+            await hub.log_event("BENCHMARK_A2A", response.get("response", ""))
+        except Exception as e:
+            logger.error(f"A2A benchmark failed: {e}")
+            await hub.log_event("BENCHMARK_A2A_ERROR", str(e))
+
     for i in range(1, 16):
         logger.info(f"--- Iteration {i} ---")
         try:
@@ -55,29 +80,14 @@ async def main():
             logger.error(f"Iteration {i} failed: {e}")
             await hub.log_event("ERROR", str(e))
 
-        # Optional A2A benchmark after each mediator iteration
+        # Optional A2A benchmark every N iterations (fire-and-forget)
         if os.getenv("USE_A2A_BENCHMARK", "0") == "1":
-            bench_url = os.getenv("A2A_BENCH_URL", "http://localhost:8004")
-            bench_tasks = int(os.getenv("BENCH_NUM_TASKS", "40"))
-            bench_seed = int(os.getenv("BENCH_SEED", "42"))
-            bench_full_log = os.getenv("BENCH_LOG_FULL", "0") == "1"
-            bench_timeout = int(os.getenv("A2A_BENCH_TIMEOUT", "600"))
-            request_payload = json.dumps({
-                "num_tasks": bench_tasks,
-                "seed": bench_seed,
-                "full_log": bench_full_log,
-                "iteration": i
-            })
-            try:
-                response = await send_message(
-                    message=request_payload,
-                    base_url=bench_url,
-                    timeout=bench_timeout,
-                )
-                await hub.log_event("BENCHMARK_A2A", response.get("response", ""))
-            except Exception as e:
-                logger.error(f"A2A benchmark failed: {e}")
-                await hub.log_event("BENCHMARK_A2A_ERROR", str(e))
+            every_n = int(os.getenv("BENCH_EVERY_N", "3"))
+            if i % every_n == 0:
+                task = asyncio.create_task(fire_a2a_benchmark(i))
+                pending_bench_tasks.append(task)
+                # Clean up finished tasks to avoid growth
+                pending_bench_tasks[:] = [t for t in pending_bench_tasks if not t.done()]
         
         await asyncio.sleep(5)  # Cooldown between cognitive cycles
 
