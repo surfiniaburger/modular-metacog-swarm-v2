@@ -270,10 +270,16 @@ class ResearchMediator(BaseAgent):
             f"BENCHMARK_COMPLETE: DGS={benchmark_results.get('dgs')} "
             f"models={list(benchmark_results.get('models', {}).keys())}"
         )
+        full_json_text = json.dumps(benchmark_results, indent=2)
         yield Event(
             invocation_id=ctx.invocation_id,
             author="BenchmarkAgent",
             content=types.Content(role='model', parts=[types.Part(text=summary_text)])
+        )
+        yield Event(
+            invocation_id=ctx.invocation_id,
+            author="BenchmarkAgent",
+            content=types.Content(role='model', parts=[types.Part(text=full_json_text)])
         )
         
         # 4. Vault Persistence
