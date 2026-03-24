@@ -4,6 +4,7 @@ import os
 import random
 import re
 import sys
+import time
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -89,10 +90,15 @@ class HeuristicWeakAdapter:
         raw = f"Answer: {task.choices[choice_index]} Confidence: {confidence:.2f}"
         return ModelResponse(choice_index=choice_index, confidence=confidence, raw=raw)
 
-def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random) -> Tuple[Dict[str, float], List[Dict[str, float]], List[ModelResponse]]:
+def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random, max_seconds: float | None = None) -> Tuple[Dict[str, float], List[Dict[str, float]], List[ModelResponse]]:
     results: List[Dict[str, float]] = []
     responses: List[ModelResponse] = []
+    started = time.time()
+    skipped = 0
     for task in tasks:
+        if max_seconds is not None and (time.time() - started) > max_seconds:
+            skipped += 1
+            continue
         response = adapter.answer(task, rng)
         correct = response.choice_index == task.correct_index
         results.append({
@@ -110,6 +116,8 @@ def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random) -
         "ece": round(ece, 4),
         "brier": round(brier, 4),
         "m_ratio_proxy": m_ratio,
+        "tasks_completed": len(results),
+        "tasks_skipped": skipped,
     }
     return metrics, results, responses
 
@@ -186,9 +194,43 @@ class OllamaAdapter:
             # Timeout or transient failure; return neutral response to keep run moving.
             return ModelResponse(choice_index=0, confidence=0.5, raw="ERROR: timeout")
 
+class LiteLLMAdapter:
+    def __init__(self, name: str):
+        self.name = name
+
+    def _build_prompt(self, task: Task) -> str:
+        return (
+            "You are a benchmarked model. Answer the multiple-choice question and provide a confidence in [0,1].\n"
+            "Return ONLY a JSON object with keys: choice (A or B), confidence (0 to 1).\n"
+            f"Question: {task.prompt}\n"
+            f"Choices: A: {task.choices[0]} | B: {task.choices[1]}\n"
+            "JSON:"
+        )
+
+    def answer(self, task: Task, rng: random.Random) -> ModelResponse:
+        try:
+            from litellm import completion
+            prompt = self._build_prompt(task)
+            resp = completion(
+                model=self.name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                top_p=0.9,
+            )
+            content = resp.choices[0].message["content"]
+            choice_index, confidence = OllamaAdapter._parse_response(self, content)
+            return ModelResponse(choice_index=choice_index, confidence=confidence, raw=content)
+        except Exception:
+            return ModelResponse(choice_index=0, confidence=0.5, raw="ERROR: litellm")
+
 def _select_adapters() -> Tuple[ModelAdapter, ModelAdapter]:
     use_ollama = os.getenv("USE_OLLAMA", "0") == "1"
+    use_litellm = os.getenv("USE_LITELLM", "0") == "1"
     host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+    if use_litellm:
+        strong_name = os.getenv("BENCH_MODEL_STRONG", "ollama/qwen3.5:9b")
+        weak_name = os.getenv("BENCH_MODEL_WEAK", "ollama/qwen2.5-coder:7b")
+        return LiteLLMAdapter(strong_name), LiteLLMAdapter(weak_name)
     if use_ollama:
         return OllamaAdapter("qwen3.5:9b", host), OllamaAdapter("qwen2.5-coder:7b", host)
     return HeuristicStrongAdapter(), HeuristicWeakAdapter()
@@ -199,8 +241,10 @@ def run_benchmark(num_tasks: int = 120, seed: int = 42, full_log: bool = False) 
 
     strong, weak = _select_adapters()
 
-    strong_metrics, strong_results, strong_responses = _score_model(strong, tasks, rng)
-    weak_metrics, weak_results, weak_responses = _score_model(weak, tasks, rng)
+    per_model_max = os.getenv("BENCH_PER_MODEL_MAX_SECONDS")
+    per_model_max_s = float(per_model_max) if per_model_max else None
+    strong_metrics, strong_results, strong_responses = _score_model(strong, tasks, rng, max_seconds=per_model_max_s)
+    weak_metrics, weak_results, weak_responses = _score_model(weak, tasks, rng, max_seconds=per_model_max_s)
 
     acc_gap = abs(strong_metrics["accuracy"] - weak_metrics["accuracy"])
     m_ratio_gap = abs(strong_metrics["m_ratio_proxy"] - weak_metrics["m_ratio_proxy"])
