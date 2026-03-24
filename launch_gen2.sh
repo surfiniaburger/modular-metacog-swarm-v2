@@ -35,7 +35,7 @@ EXEC_PID=$!
 
 # 3. Start the A2A Benchmark Server (Background)
 echo "🧪 Starting A2A Benchmark Server (Port 8004)..."
-CARD_URL="http://localhost:8004/" PYTHONPATH=. uv run python -m benchmark_a2a.benchmark_server > benchmark.log 2>&1 &
+PYTHONPATH=. uv run python -m benchmark_a2a.benchmark_server --host 0.0.0.0 --port 8004 --card-url http://localhost:8004/ > benchmark.log 2>&1 &
 BENCH_PID=$!
 
 # 4. Give them a moment to boot
