@@ -17,7 +17,7 @@ def load_results():
             try:
                 iter_str = name.replace("iteration_", "").replace("_results.json", "")
                 iter_num = int(iter_str)
-            except Exception:
+            except ValueError:
                 iter_num = None
             if iter_num is not None and iter_num < min_iter:
                 continue
