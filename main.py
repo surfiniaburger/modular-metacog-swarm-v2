@@ -76,7 +76,26 @@ async def main():
                     await asyncio.sleep(2 * (attempt + 1))
             logger.error(f"A2A benchmark failed after retries: {last_err}")
 
-    for i in range(1, 16):
+    total_iterations = int(os.getenv("RUN_ITERATIONS", "15"))
+    summary_every_n = int(os.getenv("BENCH_SUMMARY_EVERY_N", "10"))
+    summary_on_end = os.getenv("BENCH_SUMMARY_ON_END", "1") == "1"
+
+    async def maybe_run_summary(iteration: int, final: bool = False):
+        if not (summary_on_end or summary_every_n > 0):
+            return
+        should_run = final or (summary_every_n > 0 and iteration % summary_every_n == 0)
+        if not should_run:
+            return
+        try:
+            from tools import benchmark_summary as bs
+            summary = bs.write_summary_outputs()
+            if summary:
+                await hub.log_event("BENCHMARK_SUMMARY", json.dumps(summary))
+        except Exception as e:
+            logger.error(f"Benchmark summary failed: {e}")
+            await hub.log_event("BENCHMARK_SUMMARY_ERROR", str(e))
+
+    for i in range(1, total_iterations + 1):
         logger.info(f"--- Iteration {i} ---")
         try:
             # Kick off the Mediator via runner.run_async
@@ -101,6 +120,10 @@ async def main():
                 await fire_a2a_benchmark(i)
         
         await asyncio.sleep(5)  # Cooldown between cognitive cycles
+
+        await maybe_run_summary(i, final=False)
+
+    await maybe_run_summary(total_iterations, final=True)
 
 if __name__ == "__main__":
     asyncio.run(main())

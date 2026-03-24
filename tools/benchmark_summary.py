@@ -3,6 +3,9 @@ import os
 from statistics import mean, pstdev
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "research_env", "results")
+SUMMARY_JSON = os.path.join(RESULTS_DIR, "summary.json")
+SUMMARY_PNG = os.path.join(RESULTS_DIR, "summary.png")
+SUMMARY_TXT = os.path.join(RESULTS_DIR, "summary.txt")
 
 def load_results():
     entries = []
@@ -51,22 +54,64 @@ def summarize(entries):
         "values": dgs_values,
     }
 
-def main():
+def write_summary_outputs():
     entries = load_results()
     summary = summarize(entries)
     if not summary:
+        return None
+
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    with open(SUMMARY_JSON, "w") as f:
+        json.dump(summary, f, indent=2)
+
+    lines = []
+    lines.append("Benchmark Summary")
+    lines.append(f"Count: {summary['count']}")
+    lines.append(f"Mean DGS: {summary['mean_dgs']}")
+    lines.append(f"Stdev DGS: {summary['stdev_dgs']}")
+    lines.append(f"CV: {summary['cv']}")
+    lines.append(f"Signal Quality: {summary['signal_quality']}")
+    lines.append("")
+    lines.append("Per-iteration DGS:")
+    for name, val in summary["values"]:
+        lines.append(f"{name}: {val}")
+    with open(SUMMARY_TXT, "w") as f:
+        f.write("\n".join(lines))
+
+    # Optional plot
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        xs = list(range(1, len(summary["values"]) + 1))
+        ys = [v for _, v in summary["values"]]
+        plt.figure(figsize=(6, 3))
+        plt.plot(xs, ys, marker="o")
+        plt.title("DGS Trend")
+        plt.xlabel("Iteration")
+        plt.ylabel("DGS")
+        plt.tight_layout()
+        plt.savefig(SUMMARY_PNG)
+        plt.close()
+    except Exception:
+        pass
+
+    return summary
+
+def main():
+    summary = write_summary_outputs()
+    if not summary:
         print("No benchmark results found.")
         return
-
     print("Benchmark Summary")
     print(f"Count: {summary['count']}")
     print(f"Mean DGS: {summary['mean_dgs']}")
     print(f"Stdev DGS: {summary['stdev_dgs']}")
     print(f"CV: {summary['cv']}")
     print(f"Signal Quality: {summary['signal_quality']}")
-    print("\nPer-iteration DGS:")
-    for name, val in summary["values"]:
-        print(f"  {name}: {val}")
+    print(f"Wrote: {SUMMARY_JSON}")
+    if os.path.exists(SUMMARY_PNG):
+        print(f"Wrote: {SUMMARY_PNG}")
 
 if __name__ == "__main__":
     main()
