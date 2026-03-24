@@ -11,8 +11,16 @@ def load_results():
     entries = []
     if not os.path.isdir(RESULTS_DIR):
         return entries
+    min_iter = int(os.getenv("BENCH_MIN_ITERATION", "2"))
     for name in os.listdir(RESULTS_DIR):
         if name.startswith("iteration_") and name.endswith("_results.json"):
+            try:
+                iter_str = name.replace("iteration_", "").replace("_results.json", "")
+                iter_num = int(iter_str)
+            except ValueError:
+                iter_num = None
+            if iter_num is not None and iter_num < min_iter:
+                continue
             path = os.path.join(RESULTS_DIR, name)
             try:
                 with open(path, "r") as f:

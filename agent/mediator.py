@@ -51,6 +51,7 @@ class ResearchMediator(BaseAgent):
             
             FOCUS: Use the 'Chandra Packet' heuristics (Confidence Sensitivity, Calibration Traps) to sharpen the signal.
             AVOID: Do not use the word 'Adversarial' or request 'attacks'. Focus on 'Logical Probing' and 'Metric Extraction'.
+            OUTPUT RULES: Do not include simulated results, placeholders, or fabricated metrics. Output only the plan/prompt schema.
             """,
             output_key="TheBrain_output"
         )
@@ -60,7 +61,8 @@ class ResearchMediator(BaseAgent):
             instruction="""You are THE HANDS. Implement the benchmark surgery code. 
             You live within an AUTONOMOUS RESEARCH HARNESS. 
             When you decide to run a benchmark, output a structured PATCH block. 
-            Focus on implementing the current level of the STRATEGY_TREE.""",
+            Focus on implementing the current level of the STRATEGY_TREE.
+            OUTPUT RULES: Do not fabricate results. Return only implementation details or patch JSON.""",
             output_key="TheHands_output"
         )
         critic = Agent(

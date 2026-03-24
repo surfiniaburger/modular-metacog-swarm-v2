@@ -3,11 +3,11 @@ import json
 import os
 import sys
 
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if ROOT_DIR not in sys.path:
-    sys.path.append(ROOT_DIR)
+TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
+if TOOLS_DIR not in sys.path:
+    sys.path.append(TOOLS_DIR)
 
-from med_safety_gym.messenger import send_message
+from messenger import send_message
 
 async def main():
     url = os.getenv("A2A_BENCH_URL", "http://localhost:8004")
