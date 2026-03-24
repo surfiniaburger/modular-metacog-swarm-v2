@@ -39,14 +39,15 @@ async def main():
     # 5. Iteration Loop
     bench_lock = asyncio.Lock()
 
+    bench_url = os.getenv("A2A_BENCH_URL", "http://localhost:8004")
+    bench_tasks = int(os.getenv("BENCH_NUM_TASKS", "10"))
+    bench_seed = int(os.getenv("BENCH_SEED", "42"))
+    bench_full_log = os.getenv("BENCH_LOG_FULL", "0") == "1"
+    bench_timeout = int(os.getenv("A2A_BENCH_TIMEOUT", "600"))
+    bench_retries = int(os.getenv("BENCH_RETRIES", "2"))
+    bench_sleep = float(os.getenv("BENCH_SLEEP_SECONDS", "2"))
+
     async def fire_a2a_benchmark(iteration: int):
-        bench_url = os.getenv("A2A_BENCH_URL", "http://localhost:8004")
-        bench_tasks = int(os.getenv("BENCH_NUM_TASKS", "10"))
-        bench_seed = int(os.getenv("BENCH_SEED", "42"))
-        bench_full_log = os.getenv("BENCH_LOG_FULL", "0") == "1"
-        bench_timeout = int(os.getenv("A2A_BENCH_TIMEOUT", "600"))
-        bench_retries = int(os.getenv("BENCH_RETRIES", "2"))
-        bench_sleep = float(os.getenv("BENCH_SLEEP_SECONDS", "2"))
         request_payload = json.dumps({
             "num_tasks": bench_tasks,
             "seed": bench_seed,

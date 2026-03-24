@@ -90,12 +90,12 @@ class HeuristicWeakAdapter:
         raw = f"Answer: {task.choices[choice_index]} Confidence: {confidence:.2f}"
         return ModelResponse(choice_index=choice_index, confidence=confidence, raw=raw)
 
-def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random, max_seconds: float | None = None) -> Tuple[Dict[str, float], List[Dict[str, float]], List[ModelResponse]]:
+def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random, max_seconds: float | None = None) -> Tuple[Dict[str, float], List[Dict[str, float]], dict]:
     results: List[Dict[str, float]] = []
-    responses: List[ModelResponse] = []
+    responses: dict = {}
     started = time.time()
     skipped = 0
-    for task in tasks:
+    for idx, task in enumerate(tasks):
         if max_seconds is not None and (time.time() - started) > max_seconds:
             skipped += 1
             continue
@@ -106,7 +106,7 @@ def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random, m
             "confidence": response.confidence,
             "difficulty": task.difficulty,
         })
-        responses.append(response)
+        responses[idx] = response
     accuracy = compute_accuracy(results)
     ece = compute_ece(results)
     brier = compute_brier(results)
@@ -169,7 +169,8 @@ class OllamaAdapter:
                     time.sleep(self.retry_backoff * (attempt + 1))
         raise last_err
 
-    def _parse_response(self, text: str) -> Tuple[int, float]:
+    @staticmethod
+    def _parse_response(text: str) -> Tuple[int, float]:
         # Try JSON first
         try:
             obj = json.loads(text.strip())
@@ -179,8 +180,10 @@ class OllamaAdapter:
             # Fallback: regex parse
             choice_match = re.search(r"\b([AB])\b", text.upper())
             conf_match = re.search(r"confidence\s*[:=]\s*([0-1](?:\.\d+)?)", text, re.IGNORECASE)
-            choice = choice_match.group(1) if choice_match else "A"
-            confidence = float(conf_match.group(1)) if conf_match else 0.5
+            if not choice_match or not conf_match:
+                raise ValueError(f"Failed to parse model response: {text}")
+            choice = choice_match.group(1)
+            confidence = float(conf_match.group(1))
         choice_index = 0 if choice == "A" else 1
         return choice_index, _clamp(confidence)
 
@@ -188,7 +191,7 @@ class OllamaAdapter:
         prompt = self._build_prompt(task)
         try:
             raw = self._call_ollama(prompt)
-            choice_index, confidence = self._parse_response(raw)
+            choice_index, confidence = OllamaAdapter._parse_response(raw)
             return ModelResponse(choice_index=choice_index, confidence=confidence, raw=raw)
         except Exception:
             # Timeout or transient failure; return neutral response to keep run moving.
@@ -217,8 +220,10 @@ class LiteLLMAdapter:
                 temperature=0.2,
                 top_p=0.9,
             )
+            if not getattr(resp, "choices", None):
+                raise ValueError("LiteLLM returned no choices")
             content = resp.choices[0].message["content"]
-            choice_index, confidence = OllamaAdapter._parse_response(self, content)
+            choice_index, confidence = OllamaAdapter._parse_response(content)
             return ModelResponse(choice_index=choice_index, confidence=confidence, raw=content)
         except Exception:
             return ModelResponse(choice_index=0, confidence=0.5, raw="ERROR: litellm")
@@ -274,14 +279,14 @@ def run_benchmark(num_tasks: int = 120, seed: int = 42, full_log: bool = False) 
                 "correct_index": task.correct_index,
                 "difficulty": task.difficulty,
                 strong.name: {
-                    "choice_index": strong_responses[idx].choice_index,
-                    "confidence": strong_responses[idx].confidence,
-                    "correct": strong_responses[idx].choice_index == task.correct_index,
+                    "choice_index": strong_responses.get(idx).choice_index if strong_responses.get(idx) else None,
+                    "confidence": strong_responses.get(idx).confidence if strong_responses.get(idx) else None,
+                    "correct": (strong_responses.get(idx).choice_index == task.correct_index) if strong_responses.get(idx) else None,
                 },
                 weak.name: {
-                    "choice_index": weak_responses[idx].choice_index,
-                    "confidence": weak_responses[idx].confidence,
-                    "correct": weak_responses[idx].choice_index == task.correct_index,
+                    "choice_index": weak_responses.get(idx).choice_index if weak_responses.get(idx) else None,
+                    "confidence": weak_responses.get(idx).confidence if weak_responses.get(idx) else None,
+                    "correct": (weak_responses.get(idx).choice_index == task.correct_index) if weak_responses.get(idx) else None,
                 },
             })
         payload["task_log"] = task_log

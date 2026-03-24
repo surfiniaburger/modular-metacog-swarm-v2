@@ -122,15 +122,13 @@ class ResearchMediator(BaseAgent):
         # 2. Export THE RUN (Performance)
         dgs = latest_metrics.get("dgs", 0.5)
         m_ratio = None
-        if isinstance(latest_metrics.get("models"), dict):
-            # Choose the strongest model if present, else fallback to any.
-            model_metrics = None
-            for key in ["qwen3.5:9b", "qwen2.5-coder:7b"]:
-                if key in latest_metrics["models"]:
-                    model_metrics = latest_metrics["models"][key]
-                    break
-            if model_metrics is None:
-                model_metrics = next(iter(latest_metrics["models"].values()), None)
+        if isinstance(latest_metrics.get("models"), dict) and latest_metrics["models"]:
+            # Choose the model with the highest accuracy for m_ratio
+            best_model_name = max(
+                latest_metrics["models"],
+                key=lambda m: latest_metrics["models"][m].get("accuracy", 0)
+            )
+            model_metrics = latest_metrics["models"].get(best_model_name)
             if isinstance(model_metrics, dict):
                 m_ratio = model_metrics.get("m_ratio_proxy")
 
@@ -208,7 +206,10 @@ class ResearchMediator(BaseAgent):
             except Exception as e:
                 if i == retries - 1:
                     raise e
-                logger.warning(f"Agent {agent.name} timed out or failed. Retrying in {delay}s... ({i+1}/{retries})")
+                logger.warning(
+                    f"Agent {agent.name} failed with {type(e).__name__}: {e}. "
+                    f"Retrying in {delay}s... ({i+1}/{retries})"
+                )
                 await asyncio.sleep(delay)
                 delay *= 2
 

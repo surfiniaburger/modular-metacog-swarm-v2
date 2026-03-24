@@ -18,8 +18,8 @@ def load_results():
                 with open(path, "r") as f:
                     data = json.load(f)
                 entries.append((name, data))
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Warning: could not load or parse {path}: {e}")
     return sorted(entries, key=lambda x: x[0])
 
 def summarize(entries):
