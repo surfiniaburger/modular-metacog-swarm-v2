@@ -29,6 +29,43 @@ This repository implements a **Sovereign Agent** and **Stateless Executor** arch
     - Start the Executor: `python executor/mcp_server.py`
     - Run the Mediator logic (to be implemented).
 
+## Benchmark & Summary
+
+### Quick Run (A2A benchmark + summaries)
+```bash
+./reset_golden_run.sh
+```
+
+This launches:
+- Hub (8000)
+- MCP executor (stdio)
+- A2A Benchmark server (8004)
+- Mediator loop
+
+### Validate A2A Benchmark (smoke test)
+```bash
+A2A_BENCH_URL=http://localhost:8004 uv run python tools/a2a_smoke_test.py
+```
+
+### Generate Summary + Plot
+```bash
+BENCH_MIN_ITERATION=2 uv run python tools/benchmark_summary.py
+```
+
+Outputs:
+- `research_env/results/summary.json`
+- `research_env/results/summary.txt`
+- `research_env/results/summary.png` (if matplotlib is installed)
+
+### Key Environment Variables
+- `RUN_ITERATIONS`: total swarm iterations (default 10/15 depending on script)
+- `BENCH_EVERY_N`: run benchmark every N iterations (default 3)
+- `BENCH_NUM_TASKS`: tasks per benchmark run (default 10)
+- `BENCH_MIN_ITERATION`: ignore early iterations in summary (default 2)
+- `BENCH_LOG_FULL`: include full task logs (0/1)
+- `USE_LITELLM`: route benchmark through LiteLLM (0/1)
+- `BENCH_PER_MODEL_MAX_SECONDS`: timebox per model (seconds)
+
 ## Key Improvements over Gen-1
 - **No AST Hardcoding**: Patching is a delegated tool, not a coordinator duty.
 - **Dependency Isolation**: The Hub, Agent, and Executor can have separate environments.

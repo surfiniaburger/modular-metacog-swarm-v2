@@ -16,6 +16,8 @@ ENV/
 hub.log
 research_env/docs/research_chronicle.md
 research_env/results/
+research_env/program.md
+research_env/program_refusal_archive.md
 
 # OS
 .DS_Store
@@ -28,3 +30,5 @@ Thumbs.db
 # Research Artifacts (KEEP THESE)
 # research_env/vault/
 # research_env/program.md
+med_safety_gym/
+safeclaw_blueprint/
