@@ -83,3 +83,12 @@ This project is grounded in established cognitive science and multi-agent system
   - This swarm implements the **Metacognition** and **Executive Function** faculties defined in the Burnell et al. Cognitive Taxonomy to quantify the "Discriminatory Gap" between local models.
 
 - **Project Metadata**: See [chandra_packet.json](research_env/docs/chandra_packet.json) for specific signal-sharpening heuristics.
+
+## V2 Roadmap (Meta-d′)
+This repo is the V2 branch for extending the benchmark to true **meta-d′**:
+- Confidence binning + type‑2 ROC
+- meta‑d′ / d′ (M‑ratio) estimation
+- Multi‑turn micro‑drills and diverse calibration traps
+- Human baseline slice and calibration plots
+
+See `V2_PLAN.md` for full details.
