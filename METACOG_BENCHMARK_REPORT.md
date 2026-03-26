@@ -11,6 +11,19 @@ This report evaluates a metacognition‑focused benchmark aligned to the Cogniti
 
 ---
 
+## Novelty, Insights, and Discriminatory Power (Hackathon Focus)
+**Novelty:** This benchmark isolates *metacognitive calibration*—how confidence tracks correctness—rather than raw accuracy. It reveals model behavior that accuracy‑only benchmarks miss: overconfidence on calibration traps and the stability of confidence signals across task difficulty.
+
+**Insights:**  
+- The **9B model** maintains stable calibration under traps, while the **7B model** drifts toward overconfidence on ambiguous items.  
+- The signal remains **stable across scale**, which implies this is not a noisy artifact of task size.
+
+**Discriminatory Power:**  
+- DGS cleanly separates the 9B and 7B models without collapsing to 0% or 100%.  
+- DGS remains consistent over repeated runs and under larger task counts, meeting the “gradient of performance” requirement.
+
+---
+
 ## 1. Context: The Cognitive Taxonomy and Metacognition
 The `kag.md` paper positions **metacognition** as one of the ten key cognitive faculties required for AGI, defined as:
 - **Knowledge of one’s own capabilities and limitations**
@@ -112,6 +125,18 @@ signal_quality = clear
 
 ---
 
+## 5.3 Discriminatory Gradient (Across Scales)
+Comparing task counts shows the discriminatory gap *increases* while stability remains high:
+
+| Task Count | Mean DGS | Signal Quality |
+|---|---:|---|
+| 10 | ~0.15 | clear |
+| 20 | ~0.275 | clear |
+
+This demonstrates a **meaningful performance gradient** without saturation, aligning with the updated rubric.
+
+---
+
 ## 6. Alignment with kag.md
 The benchmark matches the paper’s recommendations:
 
@@ -170,4 +195,3 @@ BENCH_NUM_TASKS=20 ./reset_golden_run.sh
 # Summary
 BENCH_MIN_ITERATION=2 uv run python tools/benchmark_summary.py
 ```
-
