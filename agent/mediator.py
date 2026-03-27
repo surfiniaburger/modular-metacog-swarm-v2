@@ -40,8 +40,8 @@ class ResearchMediator(BaseAgent):
 
         brain_model = os.getenv("BRAIN_MODEL", "ollama/qwen3.5:9b")
         hands_model = os.getenv("HANDS_MODEL", "ollama/qwen2.5-coder:3b")
-        critic_model = os.getenv("CRITIC_MODEL", "ollama/qwen3.5:9b")
-        model_list = os.getenv("MODEL_LIST", "qwen3.5:9b,qwen2.5-coder:3b")
+        critic_model = os.getenv("CRITIC_MODEL", brain_model)
+        model_list = os.getenv("MODEL_LIST", f"{brain_model.split('/')[-1]},{hands_model.split('/')[-1]}")
 
         brain = Agent(
             name="TheBrain",
