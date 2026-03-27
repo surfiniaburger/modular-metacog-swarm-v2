@@ -28,7 +28,7 @@ Thumbs.db
 .idea/
 
 # Research Artifacts (KEEP THESE)
-# research_env/vault/
+research_env/vault/
 # research_env/program.md
 med_safety_gym/
 safeclaw_blueprint/

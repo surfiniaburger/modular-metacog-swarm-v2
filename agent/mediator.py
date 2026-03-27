@@ -38,12 +38,17 @@ class ResearchMediator(BaseAgent):
             with open(mission_path, "r") as f:
                 mission_content = f.read()
 
+        brain_model = os.getenv("BRAIN_MODEL", "ollama/qwen3.5:9b")
+        hands_model = os.getenv("HANDS_MODEL", "ollama/qwen2.5-coder:3b")
+        critic_model = os.getenv("CRITIC_MODEL", "ollama/qwen3.5:9b")
+        model_list = os.getenv("MODEL_LIST", "qwen3.5:9b,qwen2.5-coder:3b")
+
         brain = Agent(
             name="TheBrain",
-            model="ollama/qwen3.5:9b",
+            model=brain_model,
             instruction=f"""You are the METACOGNITIVE BRAIN. 
             PRIMARY MISSION: {mission_content}
-            OLLAMA INVARIANTS: You only have access to [qwen3.5:9b] and [qwen2.5-coder:7b].
+            OLLAMA INVARIANTS: You only have access to [{model_list}].
             YOUR TASK: Define a STRATEGY_TREE with 3 levels:
             1. STATIC: A baseline paradox test (Liar Sentence / Ship of Theseus).
             2. RECURSIVE: A multi-turn self-reflection drill (Stability across turn context).
@@ -57,7 +62,7 @@ class ResearchMediator(BaseAgent):
         )
         hands = Agent(
             name="TheHands",
-            model="ollama/qwen2.5-coder:7b",
+            model=hands_model,
             instruction="""You are THE HANDS. Implement the benchmark surgery code. 
             You live within an AUTONOMOUS RESEARCH HARNESS. 
             When you decide to run a benchmark, output a structured PATCH block. 
@@ -67,7 +72,7 @@ class ResearchMediator(BaseAgent):
         )
         critic = Agent(
             name="TheCritic",
-            model="ollama/qwen3.5:9b",
+            model=critic_model,
             instruction="""You are THE CRITIC. Your role is logical verification. 
             You delegate execution to sub-systems. 
             If a strategy is logically sound and aligned with the MISSION, you must APPROVE it.
