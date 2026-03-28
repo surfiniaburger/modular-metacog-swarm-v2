@@ -49,6 +49,10 @@ Each task is:
 - **Forced‑choice** (binary: A/B)
 - Followed by a **confidence rating** in `[0,1]`
 
+![Calibration vs Sensitivity](docs/calibration-diagram.png)
+
+*Caption:* The figure contrasts **metacognitive sensitivity** (separation between correct vs incorrect confidence distributions) with **bias/calibration** (overall confidence shift). Our benchmark captures sensitivity with **type‑2 ROC / meta‑d′**, and captures calibration bias with **ECE/Brier**, so we can tell whether models are confidently wrong vs genuinely discriminating correct from incorrect trials.
+
 This allows:
 - **Accuracy** (objective correctness)
 - **Calibration metrics** (ECE, Brier)
@@ -62,6 +66,10 @@ We compute:
 - **M‑Ratio (proxy)**  
 - **DGS (Discriminatory Gap Score)**  
   - combines model accuracy and metacognitive efficiency differences
+
+**Method & limitations (meta‑d′ approximation):**  
+For V2, meta‑d′ is approximated from a type‑2 ROC built over confidence bins. We convert the type‑2 ROC AUC to an SDT‑style meta‑d′ via the standard normal inverse CDF, then compute M‑ratio as `meta‑d′ / d′`. This is a practical approximation for stability and reproducibility at small sample sizes; it is not a full maximum‑likelihood meta‑d′ fit. We report bootstrap confidence intervals and explicitly treat the result as an approximation rather than a definitive SDT estimate.
+**Citation:** Fleming & Lau (2014) review type‑2 ROC analysis as a bias‑free metacognitive sensitivity measure and motivate meta‑d′/d′ as metacognitive efficiency.
 
 ### 2.3 Calibration Traps
 Tasks include:
