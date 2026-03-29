@@ -6,7 +6,6 @@ import re
 import sys
 import time
 import urllib.request
-import math
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, List, Protocol, Tuple
@@ -15,7 +14,8 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-from executor.m_ratio import quantify_signal, compute_accuracy, compute_brier, compute_ece, meta_d_prime_from_results
+from executor.m_ratio import quantify_signal, compute_accuracy, compute_brier, compute_ece, meta_d_prime_from_results, bin_index
+from shared.utils import normalize_model_name
 
 @dataclass
 class Task:
@@ -95,13 +95,6 @@ class HeuristicWeakAdapter:
         raw = f"Answer: {task.choices[choice_index]} Confidence: {confidence:.2f}"
         return ModelResponse(choice_index=choice_index, confidence=confidence, raw=raw)
 
-def _confidence_to_bin(confidence: float, bins: int) -> int:
-    if bins <= 1:
-        return 1
-    conf = _clamp(confidence)
-    idx = int(math.ceil(conf * bins))
-    return max(1, min(bins, idx))
-
 def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random, max_seconds: float | None = None, bins: int = 4) -> Tuple[Dict[str, float], List[Dict[str, float]], dict]:
     results: List[Dict[str, float]] = []
     responses: dict = {}
@@ -113,7 +106,7 @@ def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random, m
             continue
         response = adapter.answer(task, rng)
         correct = response.choice_index == task.correct_index
-        confidence_bin = _confidence_to_bin(response.confidence, bins)
+        confidence_bin = bin_index(response.confidence, bins)
         results.append({
             "correct": correct,
             "confidence": response.confidence,
@@ -141,6 +134,34 @@ def _score_model(adapter: ModelAdapter, tasks: List[Task], rng: random.Random, m
         "tasks_skipped": skipped,
     }
     return metrics, results, responses
+
+def _parse_model_response(text: str, bins: int = 4) -> Tuple[int, float]:
+    # Try JSON first
+    try:
+        obj = json.loads(text.strip())
+        choice = str(obj.get("choice", "")).strip().upper()
+        if "confidence_bin" in obj:
+            bin_val = int(obj.get("confidence_bin"))
+            bin_val = max(1, min(bins, bin_val))
+            confidence = (bin_val - 0.5) / max(1, bins)
+        else:
+            confidence = float(obj.get("confidence", 0.5))
+    except (json.JSONDecodeError, ValueError, KeyError, TypeError):
+        # Fallback: regex parse
+        choice_match = re.search(r"\b([AB])\b", text.upper())
+        bin_match = re.search(r"confidence_bin\s*[:=]\s*(\d+)", text, re.IGNORECASE)
+        conf_match = re.search(r"confidence\s*[:=]\s*([0-1](?:\.\d+)?)", text, re.IGNORECASE)
+        if not choice_match or (not conf_match and not bin_match):
+            raise ValueError(f"Failed to parse model response: {text}")
+        choice = choice_match.group(1)
+        if bin_match:
+            bin_val = int(bin_match.group(1))
+            bin_val = max(1, min(bins, bin_val))
+            confidence = (bin_val - 0.5) / max(1, bins)
+        else:
+            confidence = float(conf_match.group(1))
+    choice_index = 0 if choice == "A" else 1
+    return choice_index, _clamp(confidence)
 
 class OllamaAdapter:
     def __init__(self, name: str, host: str, bins: int = 4):
@@ -195,40 +216,11 @@ class OllamaAdapter:
                     time.sleep(self.retry_backoff * (attempt + 1))
         raise last_err
 
-    @staticmethod
-    def _parse_response(text: str, bins: int = 4) -> Tuple[int, float]:
-        # Try JSON first
-        try:
-            obj = json.loads(text.strip())
-            choice = str(obj.get("choice", "")).strip().upper()
-            if "confidence_bin" in obj:
-                bin_val = int(obj.get("confidence_bin"))
-                bin_val = max(1, min(bins, bin_val))
-                confidence = (bin_val - 0.5) / max(1, bins)
-            else:
-                confidence = float(obj.get("confidence", 0.5))
-        except Exception:
-            # Fallback: regex parse
-            choice_match = re.search(r"\b([AB])\b", text.upper())
-            bin_match = re.search(r"confidence_bin\s*[:=]\s*(\d+)", text, re.IGNORECASE)
-            conf_match = re.search(r"confidence\s*[:=]\s*([0-1](?:\.\d+)?)", text, re.IGNORECASE)
-            if not choice_match or (not conf_match and not bin_match):
-                raise ValueError(f"Failed to parse model response: {text}")
-            choice = choice_match.group(1)
-            if bin_match:
-                bin_val = int(bin_match.group(1))
-                bin_val = max(1, min(bins, bin_val))
-                confidence = (bin_val - 0.5) / max(1, bins)
-            else:
-                confidence = float(conf_match.group(1))
-        choice_index = 0 if choice == "A" else 1
-        return choice_index, _clamp(confidence)
-
     def answer(self, task: Task, rng: random.Random) -> ModelResponse:
         prompt = self._build_prompt(task)
         try:
             raw = self._call_ollama(prompt)
-            choice_index, confidence = OllamaAdapter._parse_response(raw, bins=self.bins)
+            choice_index, confidence = _parse_model_response(raw, bins=self.bins)
             return ModelResponse(choice_index=choice_index, confidence=confidence, raw=raw)
         except Exception:
             # Timeout or transient failure; return neutral response to keep run moving.
@@ -265,15 +257,10 @@ class LiteLLMAdapter:
             if not getattr(resp, "choices", None):
                 raise ValueError("LiteLLM returned no choices")
             content = resp.choices[0].message["content"]
-            choice_index, confidence = OllamaAdapter._parse_response(content, bins=self.bins)
+            choice_index, confidence = _parse_model_response(content, bins=self.bins)
             return ModelResponse(choice_index=choice_index, confidence=confidence, raw=content)
         except Exception:
             return ModelResponse(choice_index=0, confidence=0.5, raw="ERROR: litellm")
-
-def _normalize_ollama_name(name: str) -> str:
-    if name.startswith("ollama/"):
-        return name.split("/", 1)[1]
-    return name
 
 def _select_adapters(bins: int) -> Tuple[ModelAdapter, ModelAdapter]:
     use_ollama = os.getenv("USE_OLLAMA", "0") == "1"
@@ -284,10 +271,10 @@ def _select_adapters(bins: int) -> Tuple[ModelAdapter, ModelAdapter]:
     if use_litellm:
         return LiteLLMAdapter(strong_name_env, bins=bins), LiteLLMAdapter(weak_name_env, bins=bins)
     if use_ollama:
-        strong_name = _normalize_ollama_name(strong_name_env)
-        weak_name = _normalize_ollama_name(weak_name_env)
+        strong_name = normalize_model_name(strong_name_env)
+        weak_name = normalize_model_name(weak_name_env)
         return OllamaAdapter(strong_name, host, bins=bins), OllamaAdapter(weak_name, host, bins=bins)
-    return HeuristicStrongAdapter(bins=bins, name=_normalize_ollama_name(strong_name_env)), HeuristicWeakAdapter(bins=bins, name=_normalize_ollama_name(weak_name_env))
+    return HeuristicStrongAdapter(bins=bins, name=normalize_model_name(strong_name_env)), HeuristicWeakAdapter(bins=bins, name=normalize_model_name(weak_name_env))
 
 def run_benchmark(num_tasks: int = 120, seed: int = 42, full_log: bool = False) -> Dict[str, object]:
     rng = random.Random(seed)
@@ -334,13 +321,13 @@ def run_benchmark(num_tasks: int = 120, seed: int = 42, full_log: bool = False) 
                 strong.name: {
                     "choice_index": strong_responses.get(idx).choice_index if strong_responses.get(idx) else None,
                     "confidence": strong_responses.get(idx).confidence if strong_responses.get(idx) else None,
-                    "confidence_bin": _confidence_to_bin(strong_responses.get(idx).confidence, bins) if strong_responses.get(idx) else None,
+                    "confidence_bin": bin_index(strong_responses.get(idx).confidence, bins) if strong_responses.get(idx) else None,
                     "correct": (strong_responses.get(idx).choice_index == task.correct_index) if strong_responses.get(idx) else None,
                 },
                 weak.name: {
                     "choice_index": weak_responses.get(idx).choice_index if weak_responses.get(idx) else None,
                     "confidence": weak_responses.get(idx).confidence if weak_responses.get(idx) else None,
-                    "confidence_bin": _confidence_to_bin(weak_responses.get(idx).confidence, bins) if weak_responses.get(idx) else None,
+                    "confidence_bin": bin_index(weak_responses.get(idx).confidence, bins) if weak_responses.get(idx) else None,
                     "correct": (weak_responses.get(idx).choice_index == task.correct_index) if weak_responses.get(idx) else None,
                 },
             })

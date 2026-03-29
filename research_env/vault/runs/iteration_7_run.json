@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-03-22T04:24:46.895981",
+  "timestamp": "2026-03-28T22:23:22.968394",
   "iteration": 7,
   "metrics": {
-    "dgs": 0.5,
-    "m_ratio": 0.885,
+    "dgs": 0.268,
+    "m_ratio": 1.091,
     "status": "REJECTED"
   },
   "models": [
-    "qwen3.5:9b",
-    "qwen2.5-coder:7b"
+    "ollama/qwen3.5:9b",
+    "ollama/qwen2.5-coder:3b"
   ]
 }

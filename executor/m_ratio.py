@@ -93,7 +93,7 @@ def _norm_ppf(p: float) -> float:
         (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1)
     )
 
-def _bin_index(confidence: float, bins: int) -> int:
+def bin_index(confidence: float, bins: int) -> int:
     if bins <= 1:
         return 1
     conf = _clamp(confidence, 0.0, 1.0)
@@ -108,11 +108,13 @@ def _type2_roc(results: List[Dict[str, float]], bins: int) -> Tuple[List[Tuple[f
     if not results:
         return [], 0.0
     bins = max(1, int(bins))
-    # Precompute bin indices
-    for r in results:
-        r["_bin"] = _bin_index(float(r["confidence"]), bins)
-    correct = [r for r in results if r["correct"]]
-    incorrect = [r for r in results if not r["correct"]]
+    # Precompute bin indices without mutating inputs
+    indexed = [
+        {"correct": r["correct"], "_bin": bin_index(float(r["confidence"]), bins)}
+        for r in results
+    ]
+    correct = [r for r in indexed if r["correct"]]
+    incorrect = [r for r in indexed if not r["correct"]]
     if not correct or not incorrect:
         return [], 0.0
 
