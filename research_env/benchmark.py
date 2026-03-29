@@ -146,7 +146,7 @@ def _parse_model_response(text: str, bins: int = 4) -> Tuple[int, float]:
             confidence = (bin_val - 0.5) / max(1, bins)
         else:
             confidence = float(obj.get("confidence", 0.5))
-    except Exception:
+    except (json.JSONDecodeError, ValueError, KeyError, TypeError):
         # Fallback: regex parse
         choice_match = re.search(r"\b([AB])\b", text.upper())
         bin_match = re.search(r"confidence_bin\s*[:=]\s*(\d+)", text, re.IGNORECASE)
