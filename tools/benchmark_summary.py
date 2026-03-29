@@ -1,6 +1,7 @@
 import json
 import os
 from statistics import mean, pstdev
+from shared.utils import normalize_model_name
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "research_env", "results")
 SUMMARY_JSON = os.path.join(RESULTS_DIR, "summary.json")
@@ -8,16 +9,9 @@ SUMMARY_PNG = os.path.join(RESULTS_DIR, "summary.png")
 SUMMARY_TXT = os.path.join(RESULTS_DIR, "summary.txt")
 SUMMARY_RELIABILITY_PNG = os.path.join(RESULTS_DIR, "summary_reliability.png")
 
-def _normalize_model_name(name: str) -> str:
-    if not isinstance(name, str):
-        return str(name)
-    if name.startswith("ollama/"):
-        return name.split("/", 1)[1]
-    return name
-
 def _expected_models_from_env() -> list[str]:
-    strong = _normalize_model_name(os.getenv("BENCH_MODEL_STRONG", "qwen3.5:9b"))
-    weak = _normalize_model_name(os.getenv("BENCH_MODEL_WEAK", "qwen2.5-coder:7b"))
+    strong = normalize_model_name(os.getenv("BENCH_MODEL_STRONG", "qwen3.5:9b"))
+    weak = normalize_model_name(os.getenv("BENCH_MODEL_WEAK", "qwen2.5-coder:7b"))
     return [strong, weak]
 
 def load_results():
@@ -146,7 +140,7 @@ def write_summary_outputs():
         # Include latest meta-d' snapshot if available
         latest_name, latest_models = summary["meta_series"][-1]
         expected_models = _expected_models_from_env()
-        latest_model_names = [_normalize_model_name(n) for n in latest_models.keys()]
+        latest_model_names = [normalize_model_name(n) for n in latest_models.keys()]
         if set(expected_models) != set(latest_model_names):
             lines.append("")
             lines.append("WARNING: Model names in results do not match BENCH_MODEL_STRONG/WEAK.")
@@ -260,7 +254,7 @@ def main():
     expected_models = _expected_models_from_env()
     if summary.get("meta_series"):
         latest_name, latest_models = summary["meta_series"][-1]
-        latest_model_names = [_normalize_model_name(n) for n in latest_models.keys()]
+        latest_model_names = [normalize_model_name(n) for n in latest_models.keys()]
         if set(expected_models) != set(latest_model_names):
             print("WARNING: Model names in results do not match BENCH_MODEL_STRONG/WEAK.")
             print(f"Expected: {expected_models}")
