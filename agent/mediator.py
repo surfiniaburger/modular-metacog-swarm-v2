@@ -147,7 +147,7 @@ class ResearchMediator(BaseAgent):
                 "m_ratio": m_ratio if m_ratio is not None else 0.885,
                 "status": "APPROVED" if "APPROVE" in review.upper() else "REJECTED"
             },
-            "models": ["qwen3.5:9b", "qwen2.5-coder:7b"]
+            "models": [self.brain.model, self.hands.model]
         }
         run_file = os.path.join(runs_dir, f"iteration_{iteration}_run.json")
         with open(run_file, "w") as f:

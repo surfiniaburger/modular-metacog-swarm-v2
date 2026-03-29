@@ -65,6 +65,8 @@ Outputs:
 - `BENCH_LOG_FULL`: include full task logs (0/1)
 - `USE_LITELLM`: route benchmark through LiteLLM (0/1)
 - `BENCH_PER_MODEL_MAX_SECONDS`: timebox per model (seconds)
+- `BENCH_CONF_BINS`: confidence bins for meta-d′ (default 4)
+- `BENCH_BOOTSTRAP`: bootstrap samples for meta-d′ CI (default 200)
 
 ## Key Improvements over Gen-1
 - **No AST Hardcoding**: Patching is a delegated tool, not a coordinator duty.
@@ -92,3 +94,5 @@ This repo is the V2 branch for extending the benchmark to true **meta-d′**:
 - Human baseline slice and calibration plots
 
 See `V2_PLAN.md` for full details.
+
+**Note on meta‑d′ implementation:** The current V2 pipeline uses a **type‑2 ROC AUC → meta‑d′ approximation** for stability at small sample sizes. It is explicitly reported as an approximation (not a full MLE meta‑d′ fit) and accompanied by bootstrap CIs.

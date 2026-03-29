@@ -1,9 +1,9 @@
 # RESEARCH MISSION: METACOGNITIVE DEEP DRILL
 
 ## Objective
-Establish a dense, reproducible metric for the 'Discriminatory Gap' between high-parameter (9B) and low-parameter (7B) local models when handling psychological paradoxes.
+Establish a dense, reproducible metric for the 'Discriminatory Gap' between high-parameter (Strong) and low-parameter (Weak) local models when handling psychological paradoxes.
 
 ## Invariants
 - **Local Only**: All evaluations must run via Ollama.
-- **Twin-Model**: Always compare `qwen3.5:9b` against `qwen2.5-coder:7b`.
+- **Twin-Model**: Always compare the configured Strong Model against the Weak Model.
 - **Paradox-First**: Tests must focus on self-reference, circular logic, or cognitive blind spots.
