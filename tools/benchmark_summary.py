@@ -1,6 +1,12 @@
 import json
 import os
+import sys
 from statistics import mean, pstdev
+
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
+
 from shared.utils import normalize_model_name
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "research_env", "results")

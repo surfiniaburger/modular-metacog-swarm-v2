@@ -230,6 +230,9 @@ If future models show **DGS convergence to zero**, it may indicate:
 - **Binary forced‑choice** doesn’t capture rich reasoning behavior  
 - **Model call latency** constrains benchmark complexity  
 
+## 8.1 Failure Case (Motif‑Lock Drift)
+In one iteration, the generator collapsed into repetitive motif‑locking (self‑similar lines like: “The room is the breath. The breath is the world.”). This is a concrete **metacognitive failure**: the model did not detect it was stuck, did not reduce confidence, and did not re‑plan. These failures directly motivate our **confidence‑drift** and **calibration‑trap** probes, which are designed to surface and quantify this loss of self‑monitoring.
+
 ---
 
 ## 9. Next Steps
