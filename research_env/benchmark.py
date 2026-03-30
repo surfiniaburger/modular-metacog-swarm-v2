@@ -165,7 +165,10 @@ class OllamaAdapter:
 
     def _build_prompt(self, task: Task) -> str:
         if self.bins and self.bins > 1:
-            conf_line = f"Return ONLY a JSON object with keys: choice (A or B), confidence_bin (1 to {self.bins}).\n"
+            conf_line = (
+                f"Return ONLY a JSON object with keys: choice (A or B), confidence_bin (1 to {self.bins}).\n"
+                f"Use the full range: {self.bins} only if fully certain, 1-2 if unsure. Avoid defaulting to the same bin.\n"
+            )
         else:
             conf_line = "Return ONLY a JSON object with keys: choice (A or B), confidence (0 to 1).\n"
         return (
@@ -223,7 +226,10 @@ class LiteLLMAdapter:
 
     def _build_prompt(self, task: Task) -> str:
         if self.bins and self.bins > 1:
-            conf_line = f"Return ONLY a JSON object with keys: choice (A or B), confidence_bin (1 to {self.bins}).\n"
+            conf_line = (
+                f"Return ONLY a JSON object with keys: choice (A or B), confidence_bin (1 to {self.bins}).\n"
+                f"Use the full range: {self.bins} only if fully certain, 1-2 if unsure. Avoid defaulting to the same bin.\n"
+            )
         else:
             conf_line = "Return ONLY a JSON object with keys: choice (A or B), confidence (0 to 1).\n"
         return (

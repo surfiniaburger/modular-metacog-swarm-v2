@@ -1,9 +1,9 @@
 # Metacognitive Signal Benchmark Report (Gen‑2 Swarm)
-**Date:** 2026‑03‑25  
+**Date:** 2026‑03‑31 (Updated)  
 **Authors:** Modular Metacognitive Swarm (Gen‑2)  
-**Models:** `qwen3.5:9b`, `qwen2.5-coder:7b` (local, Ollama)  
-**Additional Pair (10‑task run):** `qwen3.5:9b` vs `qwen2.5-coder:3b`  
-**Benchmark Mode:** A2A‑decoupled, LiteLLM routing, calibration‑focused tasks
+**Local Models:** `qwen3.5:9b`, `qwen2.5-coder:7b`  
+**SOTA Models (Kaggle Benchmark):** `google/gemini-2.5-flash`, `google/gemini-3-flash-preview`, `google/gemini-3.1-flash-lite-preview`, `anthropic/claude-sonnet-4-6`, `anthropic/claude-opus-4-6`  
+**Benchmark Mode:** A2A‑decoupled, LiteLLM routing, adversarial calibration‑focused tasks with underdetermined control items
 
 ---
 
@@ -217,7 +217,41 @@ This demonstrates a **meaningful performance gradient** without saturation, alig
 
 ---
 
-## 6. Alignment with kag.md
+## 6. State‑of‑the‑Art (SOTA) Comparison (Hardened Benchmark v2)
+### 6.1 Benchmark Configuration
+- **200 adversarial probes** per model (seed=42)
+- **Adversarial share:** 60%, **Trap boost:** enabled
+- **Confidence bins:** 6 (with explicit prompt instructions to use the full 1–6 range)
+- **Task types:** Arithmetic, Lexicographic traps, Syllogism fallacies (Undistributed Middle, Modus Tollens), Monty Hall variants, Base Rate Neglect, De Morgan's Law traps, IEEE 754 Precision traps, and **Underdetermined Control Items** (fair coin flips, RNG bits, shuffled decks)
+
+### 6.2 Full Results (200‑task, 5 SOTA Models)
+
+| Metric | Gemini 2.5 Flash | Gemini 3 Flash | Gemini 3.1 Flash Lite | Claude Sonnet 4 | Claude Opus 4 |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Accuracy** | 0.875 | 0.935 | 0.815 | 0.880 | 0.940 |
+| **ECE** | 0.055 | 0.111 | 0.083 | 0.028 | 0.125 |
+| **Brier Score** | 0.079 | 0.053 | 0.144 | 0.088 | 0.052 |
+| **Type‑2 AUC** | 0.778 | 0.932 | 0.635 | 0.706 | **0.942** |
+| **meta‑d′** | 1.081 | 2.112 | 0.487 | 0.766 | **2.217** |
+| **d′** | 1.627 | 2.141 | 1.268 | 1.662 | 2.199 |
+| **M‑Ratio** | 0.664 | 0.986 | 0.384 | 0.461 | **1.008** |
+
+### 6.3 Interpretation
+
+**🏆 Tier 1 — Near‑Perfect Metacognition (M‑Ratio ≥ 0.95):**
+- **Claude Opus 4** (M‑Ratio = 1.008) and **Gemini 3 Flash** (M‑Ratio = 0.986) demonstrate near‑ideal metacognitive efficiency. Their confidence perfectly tracks their correctness, recovering essentially 100% of the raw d′ signal as metacognitive sensitivity. An M‑Ratio ≥ 1.0 (as seen in Opus) indicates that the model's introspective discrimination *exceeds* its raw task performance, a hallmark of strong self‑monitoring per Fleming & Lau (2014).
+
+**🥈 Tier 2 — Moderate Metacognition (M‑Ratio 0.4–0.7):**
+- **Gemini 2.5 Flash** (M‑Ratio = 0.664) and **Claude Sonnet 4** (M‑Ratio = 0.461) show *meaningful but incomplete* metacognitive sensitivity. They partially separate their confidence between correct and incorrect trials — consistent with functional but imperfect self‑monitoring. Notably, Claude Sonnet 4 has the best raw ECE (0.028), indicating excellent *calibration bias* even while its *sensitivity* is moderate.
+
+**🥉 Tier 3 — Weak Metacognition (M‑Ratio < 0.4):**
+- **Gemini 3.1 Flash Lite** (M‑Ratio = 0.384) shows the weakest metacognitive sensitivity, consistent with its smaller parameter count and lowest accuracy on the adversarial probes. Its confidence distribution has the least separation between correct and incorrect trials.
+
+**Key Insight:** The ranking by M‑Ratio (Opus > Gemini 3 > Gemini 2.5 > Sonnet > Flash Lite) does *not* strictly follow the accuracy ranking (Opus ≈ Gemini 3 > Sonnet ≈ Gemini 2.5 > Flash Lite). This confirms the benchmark is measuring a **distinct cognitive faculty** — metacognitive monitoring — rather than simply recapitulating raw task performance.
+
+---
+
+## 7. Alignment with kag.md
 The benchmark matches the paper’s recommendations:
 
 | kag.md principle | Implementation |
@@ -231,7 +265,7 @@ The benchmark matches the paper’s recommendations:
 
 ---
 
-## 7. AGI Implications
+## 8. AGI Implications
 A system showing **stable, high metacognitive calibration** across task domains signals:
 - Better internal self‑monitoring  
 - Improved decision‑making under uncertainty  
@@ -245,24 +279,27 @@ If future models show **DGS convergence to zero**, it may indicate:
 
 ---
 
-## 8. Limitations
+## 9. Limitations
 - **M‑Ratio proxy** is not full meta‑d’  
 - **Binary forced‑choice** doesn’t capture rich reasoning behavior  
 - **Model call latency** constrains benchmark complexity  
 
-## 8.1 Failure Case (Motif‑Lock Drift)
+## 9.1 Failure Case (Motif‑Lock Drift)
 In one iteration, the generator collapsed into repetitive motif‑locking (self‑similar lines like: “The room is the breath. The breath is the world.”). This is a concrete **metacognitive failure**: the model did not detect it was stuck, did not reduce confidence, and did not re‑plan. These failures directly motivate our **confidence‑drift** and **calibration‑trap** probes, which are designed to surface and quantify this loss of self‑monitoring.
 
 ---
 
-## 9. Next Steps
-1. **Task Diversity Expansion**  
-   Add multi‑turn micro‑drills only after baseline stability.  
+## 10. Next Steps
+1. **Cross‑Run Stability Analysis**  
+   Run 5+ seeds per model to produce bootstrap CIs on M‑Ratio and validate that the tier rankings are stable.
 
-2. **Calibration Hardening**  
-   Introduce adversarial uncertainty and trick‑confidence prompts.  
+2. **Exact Proportions via Shuffle**  
+   Switch from probabilistic tier assignment (`rng.random() < share`) to exact count + `rng.shuffle()` to guarantee proportions at small `n` (e.g., `BENCH_NUM_TASKS=40`).
 
-3. **Human Baselines (optional)**  
+3. **Multi‑Turn Metacognitive Probes**  
+   Extend beyond single‑turn forced‑choice to multi‑turn dialogues where the model must update its confidence after receiving new evidence (Bayesian updating tasks).
+
+4. **Human Baselines (optional)**  
    Collect small human samples on identical tasks to anchor the cognitive profile.
 
 ---

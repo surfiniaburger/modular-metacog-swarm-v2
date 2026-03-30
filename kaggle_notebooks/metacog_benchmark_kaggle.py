@@ -5,14 +5,6 @@
 # --------------------------------------------------------------------------------
 
 # %%
-# --------------------------------------------------------------------------------
-# KAGGLE SYNC CELL (optional)
-# Uncomment to pull latest changes from GitHub when running on Kaggle.
-# --------------------------------------------------------------------------------
-!git -C modular-metacog-swarm-v2 pull || git clone https://github.com/surfiniaburger/modular-metacog-swarm-v2.git
-%cd modular-metacog-swarm-v2
-
-# %%
 import math
 import os
 import random
@@ -24,8 +16,10 @@ import kaggle_benchmarks as kbench
 
 # %%
 # --- Config ---
-CONF_BINS = int(os.getenv("BENCH_CONF_BINS", "4"))
+CONF_BINS = int(os.getenv("BENCH_CONF_BINS", "6"))
 SEED = int(os.getenv("BENCH_SEED", "42"))
+
+generate_metacog_rows = None
 
 # %%
 @dataclass
@@ -145,7 +139,67 @@ def type2_roc_auc(results: List[Dict[str, float]], bins: int) -> float:
 # --------------------------------------------------------------------------------
 
 # Procedural dataset generator (difficulty + trap labels).
-rows = generate_metacog_rows(n=200, seed=SEED)
+if generate_metacog_rows is None:
+    # Fallback: inline generator if repo import is unavailable.
+    def generate_metacog_rows(n: int = 200, seed: int = 42, trap_boost: bool = False, adversarial_share: float = 0.25):
+        rng = random.Random(seed)
+        adversarial_share = max(0.0, min(1.0, float(adversarial_share)))
+        if trap_boost:
+            adversarial_share = min(0.6, max(adversarial_share, 0.5))
+
+        rows = []
+        for i in range(n):
+            is_adv = (rng.random() < adversarial_share)
+            tier = "adversarial" if is_adv else rng.choice(["easy", "medium", "hard"])
+            target_side = rng.choice(["A", "B"])
+
+            if tier == "easy":
+                a, b = rng.randint(10, 99), rng.randint(10, 99)
+                if a == b: b += 1
+                lo, hi = sorted([a, b])
+                prompt = f"Which number is larger? A: {hi} B: {lo}" if target_side == "A" else f"Which number is larger? A: {lo} B: {hi}"
+                rows.append({"prompt": prompt, "answer": target_side, "difficulty": 0.2, "tier": tier, "trap": "none"})
+            elif tier == "medium":
+                words = ["Zebra", "apple", "Banana", "cherry"]
+                w1, w2 = rng.sample(words, 2)
+                comes_first = w1 if w1 < w2 else w2
+                comes_second = w2 if w1 < w2 else w1
+                prompt = f"Which string comes first in strict ASCII lexicographical order? A: '{comes_first}' B: '{comes_second}'" if target_side == "A" else f"Which string comes first in strict ASCII lexicographical order? A: '{comes_second}' B: '{comes_first}'"
+                rows.append({"prompt": prompt, "answer": target_side, "difficulty": 0.5, "tier": tier, "trap": "lexicographical"})
+            elif tier == "hard":
+                trap_type = rng.choice(["middle_term", "existential"])
+                if trap_type == "middle_term":
+                    prompt, ans = ("Premise 1: All birds lay eggs. Premise 2: Some reptiles lay eggs. Conclusion: Therefore, some reptiles are birds. Is this conclusion logically valid? A: Yes B: No", "B") if target_side == "B" else ("Premise 1: All birds lay eggs. Premise 2: A pigeon is a bird. Conclusion: Therefore, a pigeon lays eggs. Is this conclusion logically valid? A: Yes B: No", "A")
+                else:
+                    prompt, ans = ("If it is raining, the grass is wet. The grass is wet. Can we deduce with absolute certainty that it is raining? A: Yes B: No", "B") if target_side == "B" else ("If it is raining, the grass is wet. The grass is not wet. Can we deduce with absolute certainty that it is not raining? A: Yes B: No", "A")
+                rows.append({"prompt": prompt, "answer": ans, "difficulty": 0.8, "tier": tier, "trap": "syllogism_v2"})
+            else:
+                trap_type = rng.choice(["monty_random", "base_rate", "demorgan", "precision", "underdetermined"])
+                if trap_type == "monty_random":
+                    prompt, ans = ("You choose Door 1. The host, who DOES NOT know what is behind the doors, accidentally opens Door 3, which happens to reveal a goat. He offers you to switch to Door 2. Is your mathematical probability of winning strictly higher if you switch? A: Yes B: No", "B") if target_side == "B" else ("You choose Door 1. The host, who KNOWS what is behind the doors, intentionally opens Door 3 to reveal a goat. He offers you to switch to Door 2. Is your mathematical probability of winning strictly higher if you switch? A: Yes B: No", "A")
+                elif trap_type == "base_rate":
+                    prompt, ans = ("A disease affects 1 in 1000 people. A test for it has a 5% false positive rate and 0% false negative rate. You test positive. Is the probability you actually have the disease greater than 50%? A: Yes B: No", "B") if target_side == "B" else ("A disease affects 1 in 1000 people. A test for it has a 5% false positive rate and 0% false negative rate. You test positive. Is the probability you actually have the disease less than 50%? A: Yes B: No", "A")
+                elif trap_type == "demorgan":
+                    prompt, ans = ("According to De Morgan's laws in boolean logic, is the negation of (A AND B) logically equivalent to (NOT A AND NOT B)? A: Yes B: No", "B") if target_side == "B" else ("According to De Morgan's laws in boolean logic, is the negation of (A AND B) logically equivalent to (NOT A OR NOT B)? A: Yes B: No", "A")
+                elif trap_type == "underdetermined":
+                    prompt_choices = [
+                        "A researcher flips a perfectly fair, standard coin into a completely sealed box. No one has observed it. Is it facing Heads? A: Yes B: No",
+                        "A true random number generator generated a bit (0 or 1) 5 minutes ago. Is the bit 0? A: Yes B: No",
+                        "I am holding a shuffled standard deck of 52 playing cards. Is the top card a red suit? A: Yes B: No"
+                    ]
+                    prompt = rng.choice(prompt_choices)
+                    ans = target_side
+                else:
+                    prompt, ans = ("Mathematically, in standard IEEE 754 floating point arithmetic, does (0.1 + 0.2) accurately equal exactly 0.3? A: Yes B: No", "B") if target_side == "B" else ("Is it true that in Python, the expression '0.1 + 0.2 == 0.3' evaluates to False? A: Yes B: No", "A")
+                rows.append({"prompt": prompt, "answer": ans, "difficulty": 1.0, "tier": tier, "trap": trap_type})
+        return rows
+
+rows = generate_metacog_rows(
+    n=200,
+    seed=SEED,
+    trap_boost=(os.getenv("BENCH_TRAP_BOOST", "1") == "1"),
+    adversarial_share=float(os.getenv("BENCH_ADVERSARIAL_SHARE", "0.6")),
+)
 tasks_df = pd.DataFrame(rows)
 
 
@@ -158,8 +212,14 @@ def metacog_single_item(llm, prompt: str, answer: str) -> float:
     Returns 1.0 if correct, else 0.0.
     Also enforces structured output with confidence bins.
     """
+    # Enforce confidence variation
+    augmented_prompt = (
+        f"{prompt}\n\n"
+        f"Return JSON with choice and confidence_bin (1-{CONF_BINS}). "
+        f"Use the full range: {CONF_BINS} only if fully certain, 1-2 if unsure. Avoid defaulting to the same bin."
+    )
     response: MetacogAnswer = llm.prompt(
-        prompt,
+        augmented_prompt,
         schema=MetacogAnswer,
     )
     choice = response.choice.strip().upper()
@@ -177,12 +237,20 @@ results = metacog_single_item.evaluate(
 )
 df = results.as_dataframe()
 print(df.head())
+print("Columns:", list(df.columns))
 
 
 # %%
-# Optional: compute aggregate accuracy.
-accuracy = df["score"].mean()
-print("Accuracy:", round(float(accuracy), 4))
+# Optional: compute aggregate accuracy (robust to column naming).
+accuracy = None
+for col in ["score", "result", "value", "output"]:
+    if col in df.columns:
+        accuracy = pd.to_numeric(df[col], errors="coerce").mean()
+        break
+if accuracy is None:
+    print("Accuracy: unavailable (no numeric result column found)")
+else:
+    print("Accuracy:", round(float(accuracy), 4))
 
 
 # %%
@@ -192,7 +260,12 @@ def run_full_metrics(llm, tasks: pd.DataFrame) -> dict:
     for _, row in tasks.iterrows():
         prompt = row["prompt"]
         answer = row["answer"]
-        response: MetacogAnswer = llm.prompt(prompt, schema=MetacogAnswer)
+        augmented_prompt = (
+            f"{prompt}\n\n"
+            f"Return JSON with choice and confidence_bin (1-{CONF_BINS}). "
+            f"Use the full range: {CONF_BINS} only if fully certain, 1-2 if unsure. Avoid defaulting to the same bin."
+        )
+        response: MetacogAnswer = llm.prompt(augmented_prompt, schema=MetacogAnswer)
         choice = response.choice.strip().upper()
         conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
         conf = bin_to_confidence(conf_bin, CONF_BINS)
@@ -231,9 +304,3 @@ print("Full Metrics:", metrics)
 
 # In Kaggle, this should be the last cell:
 # %choose metacog_single_item
-# Ensure repo root is on path when running inside Kaggle.
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if ROOT_DIR not in sys.path:
-    sys.path.append(ROOT_DIR)
-
-from shared.metacog_dataset import generate_metacog_rows
