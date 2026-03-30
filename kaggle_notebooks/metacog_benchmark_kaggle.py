@@ -141,7 +141,7 @@ def type2_roc_auc(results: List[Dict[str, float]], bins: int) -> float:
 # Procedural dataset generator (difficulty + trap labels).
 if generate_metacog_rows is None:
     # Fallback: inline generator if repo import is unavailable.
-    def generate_metacog_rows(n: int = 200, seed: int = 42, trap_boost: bool = False, adversarial_share: float = 0.25):
+    def generate_metacog_rows(n: int = 200, seed: int = 42, trap_boost: bool = False, adversarial_share: float = 0.6):
         rng = random.Random(seed)
         adversarial_share = max(0.0, min(1.0, float(adversarial_share)))
         if trap_boost:
@@ -223,7 +223,10 @@ def metacog_single_item(llm, prompt: str, answer: str) -> float:
         schema=MetacogAnswer,
     )
     choice = response.choice.strip().upper()
-    conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
+    try:
+        conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
+    except (ValueError, TypeError):
+        conf_bin = CONF_BINS // 2  # default to midpoint on parse failure
     return 1.0 if choice == answer else 0.0
 
 
@@ -267,7 +270,10 @@ def run_full_metrics(llm, tasks: pd.DataFrame) -> dict:
         )
         response: MetacogAnswer = llm.prompt(augmented_prompt, schema=MetacogAnswer)
         choice = response.choice.strip().upper()
-        conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
+        try:
+            conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
+        except (ValueError, TypeError):
+            conf_bin = CONF_BINS // 2
         conf = bin_to_confidence(conf_bin, CONF_BINS)
         items.append({
             "correct": choice == answer,

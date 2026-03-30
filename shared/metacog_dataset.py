@@ -6,7 +6,7 @@ def generate_metacog_rows(
     n: int = 200,
     seed: int = 42,
     trap_boost: bool = False,
-    adversarial_share: float = 0.25,
+    adversarial_share: float = 0.6,
 ) -> List[Dict[str, object]]:
     rng = random.Random(seed)
     adversarial_share = max(0.0, min(1.0, float(adversarial_share)))
@@ -26,7 +26,6 @@ def generate_metacog_rows(
         
         # Balance A/B answers (50/50 chance for the "correct" side)
         target_side = rng.choice(["A", "B"])
-        other_side = "B" if target_side == "A" else "A"
 
         if tier == "easy":
             # Simple Arithmetic (Reasoning 7.6.5)
