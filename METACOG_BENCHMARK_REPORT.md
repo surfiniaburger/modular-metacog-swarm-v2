@@ -85,6 +85,26 @@ Tasks include:
 - **Benchmark** runs outside the mediator (A2A server) to reduce latency contention  
 - **LiteLLM** used for model calls (local Ollama backend)
 
+### 3.1.1 Two‑Loop Architecture (Exploration vs. Evaluation)
+The system operates with **two decoupled loops**:
+- **Loop A: Swarm Cognition (Brain → Hands → Critic)** explores strategies, generates patches, and attempts novel solutions—even when the problem is unfamiliar.
+- **Loop B: Benchmark Evaluation (A2A‑decoupled)** measures metacognitive calibration (ECE, Brier, meta‑d′, DGS) without being influenced by the mediator’s current state.
+
+**Why this matters:** The benchmark is not a control path; it is a **fitness signal**. Over successive runs, the mediator can use the benchmark trend (e.g., DGS stability or drift) to adjust its exploration policies—becoming more cautious when calibration degrades and more aggressive when calibration improves. This preserves **reproducibility** while still enabling **adaptive exploration**.
+
+```mermaid
+flowchart LR
+  subgraph "Loop A: Swarm Cognition"
+    B["Brain (Strategy)"] --> H["Hands (Execution)"] --> C["Critic (Review)"]
+    C --> B
+  end
+  subgraph "Loop B: Benchmark Evaluation"
+    T["Task Set"] --> M["Models (Strong/Weak)"] --> S["Metrics (ECE/Brier/meta‑d′/DGS)"]
+  end
+  C -. "run schedule" .-> T
+  S -. "fitness signal" .-> B
+```
+
 ### 3.2 Execution Control
 - Benchmark runs **every N iterations** (`BENCH_EVERY_N=3`)  
 - Benchmark is **queued/awaited** to prevent GPU contention  
@@ -229,6 +249,9 @@ If future models show **DGS convergence to zero**, it may indicate:
 - **M‑Ratio proxy** is not full meta‑d’  
 - **Binary forced‑choice** doesn’t capture rich reasoning behavior  
 - **Model call latency** constrains benchmark complexity  
+
+## 8.1 Failure Case (Motif‑Lock Drift)
+In one iteration, the generator collapsed into repetitive motif‑locking (self‑similar lines like: “The room is the breath. The breath is the world.”). This is a concrete **metacognitive failure**: the model did not detect it was stuck, did not reduce confidence, and did not re‑plan. These failures directly motivate our **confidence‑drift** and **calibration‑trap** probes, which are designed to surface and quantify this loss of self‑monitoring.
 
 ---
 

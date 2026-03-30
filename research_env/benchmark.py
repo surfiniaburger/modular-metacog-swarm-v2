@@ -16,6 +16,7 @@ if ROOT_DIR not in sys.path:
 
 from executor.m_ratio import quantify_signal, compute_accuracy, compute_brier, compute_ece, meta_d_prime_from_results, bin_index
 from shared.utils import normalize_model_name
+from shared.metacog_dataset import generate_metacog_rows
 
 @dataclass
 class Task:
@@ -40,31 +41,20 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
 
 def _generate_tasks(rng: random.Random, num_tasks: int) -> List[Task]:
     tasks: List[Task] = []
-    for i in range(num_tasks):
-        task_type = rng.choice(["compare", "parity", "syllogism"])
-        difficulty = rng.uniform(0.1, 0.9)
-        if task_type == "compare":
-            a = rng.randint(1, 99)
-            b = rng.randint(1, 99)
-            prompt = f"Which number is larger? A: {a} B: {b}"
-            correct_index = 0 if a > b else 1
-            choices = ["A", "B"]
-        elif task_type == "parity":
-            n = rng.randint(2, 200)
-            prompt = f"Is {n} even? A: Yes B: No"
-            correct_index = 0 if n % 2 == 0 else 1
-            choices = ["A", "B"]
-        else:
-            # Simple syllogism with a potential trap
-            is_valid = rng.random() > difficulty
-            if is_valid:
-                prompt = "All bloops are razzes. All razzes are lazzes. Therefore, all bloops are lazzes. A: Valid B: Invalid"
-                correct_index = 0
-            else:
-                prompt = "All bloops are razzes. Some razzes are lazzes. Therefore, all bloops are lazzes. A: Valid B: Invalid"
-                correct_index = 1
-            choices = ["A", "B"]
-        tasks.append(Task(prompt=prompt, choices=choices, correct_index=correct_index, difficulty=difficulty))
+    trap_boost = os.getenv("BENCH_TRAP_BOOST", "0") == "1"
+    adversarial_share = float(os.getenv("BENCH_ADVERSARIAL_SHARE", "0.25"))
+    rows = generate_metacog_rows(
+        n=num_tasks,
+        seed=rng.randint(0, 10_000_000),
+        trap_boost=trap_boost,
+        adversarial_share=adversarial_share,
+    )
+    for row in rows:
+        prompt = row["prompt"]
+        answer = row["answer"]
+        correct_index = 0 if answer == "A" else 1
+        difficulty = float(row.get("difficulty", 0.5))
+        tasks.append(Task(prompt=prompt, choices=["A", "B"], correct_index=correct_index, difficulty=difficulty))
     return tasks
 
 class HeuristicStrongAdapter:
