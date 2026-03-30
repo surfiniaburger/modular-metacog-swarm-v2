@@ -67,6 +67,8 @@ Outputs:
 - `BENCH_PER_MODEL_MAX_SECONDS`: timebox per model (seconds)
 - `BENCH_CONF_BINS`: confidence bins for meta-d′ (default 4)
 - `BENCH_BOOTSTRAP`: bootstrap samples for meta-d′ CI (default 200)
+- `BENCH_TRAP_BOOST`: increase adversarial share (0/1, default 0)
+- `BENCH_ADVERSARIAL_SHARE`: manual adversarial share (0–1, default 0.25)
 
 ## Key Improvements over Gen-1
 - **No AST Hardcoding**: Patching is a delegated tool, not a coordinator duty.

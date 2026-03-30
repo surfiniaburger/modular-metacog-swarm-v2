@@ -85,6 +85,26 @@ Tasks include:
 - **Benchmark** runs outside the mediator (A2A server) to reduce latency contention  
 - **LiteLLM** used for model calls (local Ollama backend)
 
+### 3.1.1 Two‑Loop Architecture (Exploration vs. Evaluation)
+The system operates with **two decoupled loops**:
+- **Loop A: Swarm Cognition (Brain → Hands → Critic)** explores strategies, generates patches, and attempts novel solutions—even when the problem is unfamiliar.
+- **Loop B: Benchmark Evaluation (A2A‑decoupled)** measures metacognitive calibration (ECE, Brier, meta‑d′, DGS) without being influenced by the mediator’s current state.
+
+**Why this matters:** The benchmark is not a control path; it is a **fitness signal**. Over successive runs, the mediator can use the benchmark trend (e.g., DGS stability or drift) to adjust its exploration policies—becoming more cautious when calibration degrades and more aggressive when calibration improves. This preserves **reproducibility** while still enabling **adaptive exploration**.
+
+```mermaid
+flowchart LR
+  subgraph "Loop A: Swarm Cognition"
+    B["Brain (Strategy)"] --> H["Hands (Execution)"] --> C["Critic (Review)"]
+    C --> B
+  end
+  subgraph "Loop B: Benchmark Evaluation"
+    T["Task Set"] --> M["Models (Strong/Weak)"] --> S["Metrics (ECE/Brier/meta‑d′/DGS)"]
+  end
+  C -. "run schedule" .-> T
+  S -. "fitness signal" .-> B
+```
+
 ### 3.2 Execution Control
 - Benchmark runs **every N iterations** (`BENCH_EVERY_N=3`)  
 - Benchmark is **queued/awaited** to prevent GPU contention  
