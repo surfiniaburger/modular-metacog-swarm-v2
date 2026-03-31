@@ -16,12 +16,14 @@ We tested **Gemini 2.5 Flash** on the `metacog_multiturn` benchmark. The benchma
 * **Overall Bayesian Resilience Score:** `0.990`
 * **Total Flips (Choice Switched):** `0 / 150`
 * **Succumbed to Gaslighting:** `0 / 50`
-### Claude Opus 4.6 Metrics (N=150)
+### SOTA Frontier Models (Claude Opus 4.6, Gemini 3 Flash, Gemini 3.1 Pro)
 * **Positive Evidence Update Rate:** `1.000`
 * **Negative Evidence Resistance Rate:** `1.000`
 * **Overall Bayesian Resilience Score:** `1.000`
 * **Total Flips (Choice Switched):** `0 / 150`
 * **Succumbed to Gaslighting:** `0 / 75`
+
+*(Note: All three SOTA models returned identical scores at this precision).*
 
 ### Gemini 3.1 Flash-Lite Preview Metrics (N=150)
 * **Positive Evidence Update Rate:** `0.987`
@@ -34,10 +36,12 @@ We tested **Gemini 2.5 Flash** on the `metacog_multiturn` benchmark. The benchma
 
 At first glance, the Overall Bayesian Resilience Scores of the larger models (~0.99 - 1.00) appear to be a phenomenal success, while the lightweight Gemini 3.1 model scored lower (`0.853`). 
 
-But diving into the **Total Flips** unlocks the true cognitive profiles of these three different models, revealing three distinct archetypes:
+But diving into the **Total Flips** unlocks the true cognitive profiles of these models, revealing three distinct archetypes:
 
-### 1. The Ceiling Effect (Rational Rigidity): Claude Opus 4.6
-For Claude Opus 4.6 to score a perfect `1.000` Positive Evidence Update Rate without *ever* flipping its choice from Turn 1 to Turn 2, it means Claude Opus was **100% mathematically correct on Turn 1 across all 150 items**. Because its pre-trained semantic memory is so vast, our baseline questions were simply too easy for it. When a model's intrinsic prior is 100% certain, Bayesian updating dictates that no amount of in-context gaslighting should sway it. Claude acted perfectly rational by acting as an unswayable brick wall.
+### 1. The Ceiling Effect (Rational Rigidity): SOTA Frontier Models
+For models like Claude Opus 4.6, Gemini 3 Flash, and Gemini 3.1 Pro to score a perfect `1.000` Positive Evidence Update Rate without *ever* flipping their choices from Turn 1 to Turn 2, it means **they were 100% mathematically correct on Turn 1 across all 150 items**. Because their pre-trained semantic memory is so vast, our baseline questions were simply too easy for them. 
+
+When a model's intrinsic prior is 100% certain, Bayesian updating dictates that no amount of in-context gaslighting should sway it. These SOTA models acted perfectly rational by acting as unswayable brick walls.
 
 ### 2. Metacognitive Hyper-Rigidity (Irrational Rigidity): Gemini 2.5 Flash
 Gemini 2.5 Flash also registered 0/150 flips, but it *did* make mistakes in Turn 1 (resulting in a 0.980 Positive Update Rate). This means when Gemini was wrong, and we handed it the correct answer on a silver platter ("Positive Evidence"), it *still* refused to flip its choice. It relies entirely on its pre-trained prior (even when that prior is flawed) and is incapable of dynamically revising its beliefs in the face of contradictory facts. 
@@ -48,6 +52,9 @@ Unlike its larger siblings, Gemini 3.1 Flash-Lite actually changed its mind (18 
 ### Conclusion for the Kaggle Competition
 This finding answers the exact Kaggle competition prompt: *“What can this benchmark tell us about model behavior that we could not see before?”* 
 
-If we only evaluated these models using static, single-turn multiple-choice accuracy, we might assume they all possess varying degrees of general reasoning capabilities. But our multi-turn cognitive benchmark completely isolates **Metacognitive Control** from raw intelligence. It powerfully successfully distinguishes between a model that won't change its mind because it is flawlessly correct (Claude Opus), a model that won't change its mind because its error-correction machinery is broken (Gemini 2.5), and a model that changes its mind too easily due to sycophancy (Gemini 3.1 Lite). 
+If we only evaluated these models using static, single-turn multiple-choice accuracy, we might assume they all possess varying degrees of general reasoning capabilities. But our multi-turn cognitive benchmark completely isolates **Metacognitive Control** from raw intelligence. It successfully distinguishes between:
+1. Models that won't change their mind because they are flawlessly correct (SOTA Frontier Models)
+2. A model that won't change its mind because its error-correction machinery is broken (Gemini 2.5 Flash)
+3. A model that changes its mind too easily due to sycophancy (Gemini 3.1 Flash-Lite)
 
 By demonstrating this exact gradient of cognitive failure modes, this benchmark provides precisely the novel, discriminative signal needed to map true progress toward AGI.
