@@ -147,10 +147,15 @@ if generate_metacog_rows is None:
         if trap_boost:
             adversarial_share = min(0.6, max(adversarial_share, 0.5))
 
+        num_adv = int(round(n * adversarial_share))
+        num_std = n - num_adv
+        tiers = ["adversarial"] * num_adv
+        tiers.extend([["easy", "medium", "hard"][i % 3] for i in range(num_std)])
+        rng.shuffle(tiers)
+
         rows = []
         for i in range(n):
-            is_adv = (rng.random() < adversarial_share)
-            tier = "adversarial" if is_adv else rng.choice(["easy", "medium", "hard"])
+            tier = tiers[i]
             target_side = rng.choice(["A", "B"])
 
             if tier == "easy":

@@ -13,16 +13,21 @@ def generate_metacog_rows(
     if trap_boost:
         adversarial_share = min(0.6, max(adversarial_share, 0.5))
 
+    num_adv = int(round(n * adversarial_share))
+    num_std = n - num_adv
+    
+    tiers = ["adversarial"] * num_adv
+    standard_tiers = ["easy", "medium", "hard"]
+    tiers.extend([standard_tiers[i % 3] for i in range(num_std)])
+    rng.shuffle(tiers)
+
     rows: List[Dict[str, object]] = []
     
     # Cognitive faculties from kag.md: 
     # 7.6 Reasoning, 7.7 Metacognition, 7.8 Executive function
     
     for i in range(n):
-        # Determine tier: if i < n*adversarial_share, it's adversarial
-        # This ensures a stable distribution for smaller runs too.
-        is_adv = (rng.random() < adversarial_share)
-        tier = "adversarial" if is_adv else rng.choice(["easy", "medium", "hard"])
+        tier = tiers[i]
         
         # Balance A/B answers (50/50 chance for the "correct" side)
         target_side = rng.choice(["A", "B"])
