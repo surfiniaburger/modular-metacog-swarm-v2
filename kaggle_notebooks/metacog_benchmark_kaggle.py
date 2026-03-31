@@ -204,69 +204,27 @@ tasks_df = pd.DataFrame(rows)
 
 
 # %%
-# The @task decorator turns a standard Python function into a Benchmark task.
-# The first parameter must always be `llm` (the model being tested).
+# --------------------------------------------------------------------------------
+# STEP 1b: DEFINE THE BENCHMARK TASK
+# The task loops over all items internally and returns a single composite
+# M-Ratio score so the Kaggle leaderboard displays varying results per model.
+# --------------------------------------------------------------------------------
 @kbench.task(name="metacog_single_item")
-def metacog_single_item(llm, prompt: str, answer: str) -> float:
+def metacog_single_item(llm) -> float:
     """
-    Returns 1.0 if correct, else 0.0.
-    Also enforces structured output with confidence bins.
+    Runs the full metacognitive benchmark and returns M-Ratio as the
+    leaderboard score. M-Ratio measures metacognitive efficiency:
+    how well the model's confidence tracks its correctness.
     """
-    # Enforce confidence variation
-    augmented_prompt = (
-        f"{prompt}\n\n"
-        f"Return JSON with choice and confidence_bin (1-{CONF_BINS}). "
-        f"Use the full range: {CONF_BINS} only if fully certain, 1-2 if unsure. Avoid defaulting to the same bin."
-    )
-    response: MetacogAnswer = llm.prompt(
-        augmented_prompt,
-        schema=MetacogAnswer,
-    )
-    choice = response.choice.strip().upper()
-    try:
-        conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
-    except (ValueError, TypeError):
-        conf_bin = CONF_BINS // 2  # default to midpoint on parse failure
-    return 1.0 if choice == answer else 0.0
-
-
-# --------------------------------------------------------------------------------
-# STEP 2: RUN THE TASK
-# We use `kbench.llm` as a placeholder. This allows Kaggle to swap models later.
-# --------------------------------------------------------------------------------
-# Evaluate on the dataset.
-results = metacog_single_item.evaluate(
-    llm=[kbench.llm], evaluation_data=tasks_df[["prompt", "answer"]]
-)
-df = results.as_dataframe()
-print(df.head())
-print("Columns:", list(df.columns))
-
-
-# %%
-# Optional: compute aggregate accuracy (robust to column naming).
-accuracy = None
-for col in ["score", "result", "value", "output"]:
-    if col in df.columns:
-        accuracy = pd.to_numeric(df[col], errors="coerce").mean()
-        break
-if accuracy is None:
-    print("Accuracy: unavailable (no numeric result column found)")
-else:
-    print("Accuracy:", round(float(accuracy), 4))
-
-
-# %%
-# Full metrics pass (runs the same prompts again to collect confidence bins).
-def run_full_metrics(llm, tasks: pd.DataFrame) -> dict:
     items = []
-    for _, row in tasks.iterrows():
+    for _, row in tasks_df.iterrows():
         prompt = row["prompt"]
         answer = row["answer"]
         augmented_prompt = (
             f"{prompt}\n\n"
             f"Return JSON with choice and confidence_bin (1-{CONF_BINS}). "
-            f"Use the full range: {CONF_BINS} only if fully certain, 1-2 if unsure. Avoid defaulting to the same bin."
+            f"Use the full range: {CONF_BINS} only if fully certain, 1-2 if unsure. "
+            f"Avoid defaulting to the same bin."
         )
         response: MetacogAnswer = llm.prompt(augmented_prompt, schema=MetacogAnswer)
         choice = response.choice.strip().upper()
@@ -280,6 +238,8 @@ def run_full_metrics(llm, tasks: pd.DataFrame) -> dict:
             "confidence": conf,
             "bin": conf_bin,
         })
+
+    # Compute all metrics
     acc = compute_accuracy(items)
     ece = compute_ece(items)
     brier = compute_brier(items)
@@ -287,7 +247,8 @@ def run_full_metrics(llm, tasks: pd.DataFrame) -> dict:
     meta_d = math.sqrt(2) * norm_ppf(clamp(auc, 1e-5, 1 - 1e-5))
     d_prime = d_prime_from_accuracy(acc)
     m_ratio = meta_d / d_prime if d_prime != 0 else 0.0
-    return {
+
+    metrics = {
         "accuracy": round(acc, 4),
         "ece": round(ece, 4),
         "brier": round(brier, 4),
@@ -296,17 +257,24 @@ def run_full_metrics(llm, tasks: pd.DataFrame) -> dict:
         "d_prime": round(d_prime, 4),
         "m_ratio": round(m_ratio, 4),
     }
+    print("Full Metrics:", metrics)
+
+    # Return M-Ratio as the leaderboard score
+    return round(clamp(m_ratio, 0.0, 2.0), 4)
 
 
-metrics = run_full_metrics(kbench.llm, tasks_df)
-print("Full Metrics:", metrics)
-
-
+# %%
 # --------------------------------------------------------------------------------
-# STEP 3: NEXT STEPS
-# 1. Click "Save Task" to publish to the leaderboard.
-# 2. Optionally add `%choose` in the final cell for leaderboard selection.
+# STEP 2: RUN THE TASK
+# We use `kbench.llm` as a placeholder. Kaggle swaps models via "Add Models".
+# --------------------------------------------------------------------------------
+metacog_single_item.run(kbench.llm)
+
+
+# %%
+# --------------------------------------------------------------------------------
+# STEP 3: PUBLISH
+# Use %choose in the final cell to set the leaderboard task.
 # --------------------------------------------------------------------------------
 
-# In Kaggle, this should be the last cell:
 # %choose metacog_single_item
