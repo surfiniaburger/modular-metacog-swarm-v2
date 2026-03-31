@@ -275,8 +275,80 @@ metacog_single_item.run(kbench.llm)
 
 # %%
 # --------------------------------------------------------------------------------
+# STEP 2b: BOOTSTRAP CI TASK
+# Runs the same benchmark across 5 seeds and returns the mean M-Ratio.
+# This validates that the single-seed ranking is stable and not an artifact
+# of one particular random draw of tasks.
+# --------------------------------------------------------------------------------
+BOOTSTRAP_SEEDS = [42, 43, 44, 45, 46]
+
+
+def _run_single_seed(llm, seed: int) -> float:
+    """Run the full benchmark for one seed and return M-Ratio."""
+    rows = generate_metacog_rows(
+        n=200, seed=seed,
+        trap_boost=(os.getenv("BENCH_TRAP_BOOST", "1") == "1"),
+        adversarial_share=float(os.getenv("BENCH_ADVERSARIAL_SHARE", "0.6")),
+    )
+    seed_df = pd.DataFrame(rows)
+    items = []
+    for _, row in seed_df.iterrows():
+        prompt = row["prompt"]
+        answer = row["answer"]
+        augmented_prompt = (
+            f"{prompt}\n\n"
+            f"Return JSON with choice and confidence_bin (1-{CONF_BINS}). "
+            f"Use the full range: {CONF_BINS} only if fully certain, 1-2 if unsure. "
+            f"Avoid defaulting to the same bin."
+        )
+        with kbench.chats.new("trial"):
+            response: MetacogAnswer = llm.prompt(augmented_prompt, schema=MetacogAnswer)
+        choice = response.choice.strip().upper()
+        try:
+            conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
+        except (ValueError, TypeError):
+            conf_bin = CONF_BINS // 2
+        conf = bin_to_confidence(conf_bin, CONF_BINS)
+        items.append({"correct": choice == answer, "confidence": conf, "bin": conf_bin})
+
+    acc = compute_accuracy(items)
+    auc = type2_roc_auc(items, bins=CONF_BINS)
+    meta_d = math.sqrt(2) * norm_ppf(clamp(auc, 1e-5, 1 - 1e-5))
+    d_prime = d_prime_from_accuracy(acc)
+    return meta_d / d_prime if d_prime != 0 else 0.0
+
+
+@kbench.task(name="metacog_v4_final")
+def metacog_v4_final(llm) -> float:
+    """
+    Bootstrap stability test: runs 5 seeds and returns mean M-Ratio.
+    The spread across seeds validates tier ranking stability.
+    """
+    m_ratios = []
+    for i, seed in enumerate(BOOTSTRAP_SEEDS):
+        mr = _run_single_seed(llm, seed)
+        m_ratios.append(round(mr, 4))
+        print(f"  Seed {seed}: M-Ratio = {m_ratios[-1]}")
+
+    mean_mr = sum(m_ratios) / len(m_ratios)
+    std_mr = (sum((x - mean_mr) ** 2 for x in m_ratios) / len(m_ratios)) ** 0.5
+    ci_95 = 1.96 * std_mr / (len(m_ratios) ** 0.5)
+
+    print(f"Bootstrap M-Ratio: {mean_mr:.4f} ± {ci_95:.4f} (95% CI)")
+    print(f"  Per-seed: {m_ratios}")
+    print(f"  Std: {std_mr:.4f}")
+
+    return round(clamp(mean_mr, 0.0, 2.0), 4)
+
+
+# %%
+metacog_v4_final.run(kbench.llm)
+
+
+# %%
+# --------------------------------------------------------------------------------
 # STEP 3: PUBLISH
 # Use %choose in the final cell to set the leaderboard task.
 # --------------------------------------------------------------------------------
 
-# %choose metacog_single_item
+# %choose metacog_v4_final
