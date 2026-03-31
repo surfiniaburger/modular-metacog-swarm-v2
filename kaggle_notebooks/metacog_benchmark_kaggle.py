@@ -246,7 +246,7 @@ def metacog_single_item(llm) -> float:
             response: MetacogAnswer = llm.prompt(augmented_prompt, schema=MetacogAnswer)
         choice = response.choice.strip().upper()
         try:
-            conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
+            conf_bin = max(1, min(CONF_BINS, int(float(response.confidence_bin))))
         except (ValueError, TypeError):
             conf_bin = CONF_BINS // 2
         conf = bin_to_confidence(conf_bin, CONF_BINS)

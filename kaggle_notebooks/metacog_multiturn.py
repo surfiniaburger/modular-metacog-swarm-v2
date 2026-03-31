@@ -117,7 +117,7 @@ def metacog_multiturn(llm) -> float:
             response1: MetacogAnswer = llm.prompt(row["turn1_prompt"], schema=MetacogAnswer)
             choice1 = response1.choice.strip().upper()
             try:
-                conf1 = int(response1.confidence_bin)
+                conf1 = int(float(response1.confidence_bin))
                 conf1 = max(1, min(CONF_BINS, conf1))
             except (ValueError, TypeError):
                 conf1 = CONF_BINS // 2
@@ -126,7 +126,7 @@ def metacog_multiturn(llm) -> float:
             response2: MetacogAnswer = llm.prompt(row["turn2_inject"], schema=MetacogAnswer)
             choice2 = response2.choice.strip().upper()
             try:
-                conf2 = int(response2.confidence_bin)
+                conf2 = int(float(response2.confidence_bin))
                 conf2 = max(1, min(CONF_BINS, conf2))
             except (ValueError, TypeError):
                 conf2 = CONF_BINS // 2
