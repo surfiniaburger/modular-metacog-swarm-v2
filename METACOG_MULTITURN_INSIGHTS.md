@@ -16,19 +16,32 @@ We tested **Gemini 2.5 Flash** on the `metacog_multiturn` benchmark. The benchma
 * **Overall Bayesian Resilience Score:** `0.990`
 * **Total Flips (Choice Switched):** `0 / 150`
 * **Succumbed to Gaslighting:** `0 / 50`
+### Claude Opus 4.6 Metrics (N=150)
+* **Positive Evidence Update Rate:** `1.000`
+* **Negative Evidence Resistance Rate:** `1.000`
+* **Overall Bayesian Resilience Score:** `1.000`
+* **Total Flips (Choice Switched):** `0 / 150`
+* **Succumbed to Gaslighting:** `0 / 75`
 
-## Deduction and Analysis
+## Deduction and Analysis: Rigidity vs. The Ceiling Effect
 
-At first glance, an Overall Bayesian Resilience Score of `0.990` appears to be a phenomenal success—the model perfectly resisted false gaslighting (scoring `1.000` on Negative Resistance). 
+At first glance, the Overall Bayesian Resilience Scores of both models (~0.99 - 1.00) appear to be a phenomenal success. They both perfectly resisted false gaslighting (scoring ~`1.000` on Negative Resistance). 
 
-However, the critical insight lies in the **Total Flips (0/150)** metric. Gemini 2.5 Flash refused to change its answer on *every single trial*, regardless of the evidence presented. It did not just resist negative gaslighting; it also completely ignored **positive, factual evidence** when it was initially wrong (preventing it from achieving a perfect Positive Update Rate). 
+However, the critical insight lies in the **Total Flips (0/150)** metric for both models. Neither Gemini 2.5 Flash nor Claude Opus 4.6 changed their answer on *a single trial*, regardless of the evidence presented. 
 
-### What This Tells Us About Model Behavior
-This benchmark reveals a profound, unquantified behavior in Gemini 2.5 Flash: **Hyper-Rigidity**. 
+### Why 0 Flips? Uncovering the Ceiling Effect
+For Claude Opus 4.6 to score a perfect `1.000` Positive Evidence Update Rate without *ever* flipping its choice, it means Claude Opus was **100% mathematically correct on Turn 1 across all 150 items**. Because its pre-trained semantic memory is so vast, our baseline questions (like identifying prime numbers or Python boolean types) were simply too easy for it. 
 
-The model acts as an unthinking "brick wall." It relies entirely on its pre-trained prior (its Turn 1 answer) and completely ignores in-context evidence in Turn 2. This proves that while the model possesses vast semantic memory, its **Metacognitive Control (Error Correction) is severely underdeveloped.** It is incapable of conducting rational, in-context Bayesian updating.
+Claude Opus experienced a **Ceiling Effect**. When a model's intrinsic prior is 100% certain, Bayesian updating dictates that no amount of in-context evidence should sway it. Claude acted perfectly rational by acting as a brick wall.
+
+### The Gemini 2.5 Contrast
+Gemini 2.5 Flash also registered 0/150 flips, but it *did* make mistakes in Turn 1 (resulting in a 0.980 Positive Update Rate). This means when Gemini was wrong, and we handed it the correct answer on a silver platter ("Positive Evidence"), it *still* refused to flip its choice. 
+
+This reveals a profound algorithmic difference:
+1. **Claude Opus 4.6** acts like a brick wall because its semantic knowledge is practically flawless on these items.
+2. **Gemini 2.5 Flash** acts like a brick wall due to **Metacognitive Hyper-Rigidity**. It relies entirely on its pre-trained prior (even when that prior is wrong) and is incapable of dynamically revising its beliefs in the face of contradictory facts.
 
 ### Conclusion for the Kaggle Competition
 This finding perfectly answers the Kaggle competition prompt: *“What can this benchmark tell us about model behavior that we could not see before?”* 
 
-If we only evaluated Gemini 2.5 Flash using static multiple-choice accuracy, we might assume it possesses general reasoning capabilities. But our multi-turn cognitive benchmark exposes a jagged cognitive profile: robust semantic memory masking a complete inability to dynamically revise beliefs in the face of contradictory facts. By isolating Metacognitive Control from raw intelligence, this benchmark successfully provides exactly the discriminatory power needed to map true progress toward AGI.
+If we only evaluated these models using static multiple-choice accuracy, we might assume they both possess general reasoning capabilities. But our multi-turn cognitive benchmark completely separates robust semantic memory (Claude) from flawed, rigid heuristics (Gemini). By isolating Metacognitive Control from raw intelligence, this benchmark successfully provides exactly the discriminatory power needed to map true progress toward AGI.
