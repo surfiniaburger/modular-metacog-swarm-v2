@@ -222,32 +222,36 @@ This demonstrates a **meaningful performance gradient** without saturation, alig
 - **200 adversarial probes** per model (seed=42)
 - **Adversarial share:** 60%, **Trap boost:** enabled
 - **Confidence bins:** 6 (with explicit prompt instructions to use the full 1–6 range)
+- **Trial isolation:** Each item is evaluated in a fresh conversation context (`kbench.chats.new("trial")`) to prevent in‑context learning across trials, ensuring Fleming & Lau‑compliant independent measurements
 - **Task types:** Arithmetic, Lexicographic traps, Syllogism fallacies (Undistributed Middle, Modus Tollens), Monty Hall variants, Base Rate Neglect, De Morgan's Law traps, IEEE 754 Precision traps, and **Underdetermined Control Items** (fair coin flips, RNG bits, shuffled decks)
 
-### 6.2 Full Results (200‑task, 5 SOTA Models)
+### 6.2 Leaderboard Results (200‑task, 7 SOTA Models, Trial‑Isolated)
 
-| Metric | Gemini 2.5 Flash | Gemini 3 Flash | Gemini 3.1 Flash Lite | Claude Sonnet 4 | Claude Opus 4 |
-|---|:---:|:---:|:---:|:---:|:---:|
-| **Accuracy** | 0.875 | 0.935 | 0.815 | 0.880 | 0.940 |
-| **ECE** | 0.055 | 0.111 | 0.083 | 0.028 | 0.125 |
-| **Brier Score** | 0.079 | 0.053 | 0.144 | 0.088 | 0.052 |
-| **Type‑2 AUC** | 0.778 | 0.932 | 0.635 | 0.706 | **0.942** |
-| **meta‑d′** | 1.081 | 2.112 | 0.487 | 0.766 | **2.217** |
-| **d′** | 1.627 | 2.141 | 1.268 | 1.662 | 2.199 |
-| **M‑Ratio** | 0.664 | 0.986 | 0.384 | 0.461 | **1.008** |
+| Rank | Model | M‑Ratio |
+|:---:|---|:---:|
+| 1 | **Gemini 3 Flash Preview** | **1.17** |
+| 2 | **Claude Opus 4.6** | **1.01** |
+| 3 | GLM‑5 | 0.88 |
+| 4 | DeepSeek V3.2 | 0.59 |
+| 4 | Gemini 2.5 Flash | 0.59 |
+| 6 | Claude Sonnet 4.6 | 0.43 |
+| 7 | Gemini 3.1 Flash‑Lite Preview | 0.40 |
 
 ### 6.3 Interpretation
 
 **🏆 Tier 1 — Near‑Perfect Metacognition (M‑Ratio ≥ 0.95):**
-- **Claude Opus 4** (M‑Ratio = 1.008) and **Gemini 3 Flash** (M‑Ratio = 0.986) demonstrate near‑ideal metacognitive efficiency. Their confidence perfectly tracks their correctness, recovering essentially 100% of the raw d′ signal as metacognitive sensitivity. An M‑Ratio ≥ 1.0 (as seen in Opus) indicates that the model's introspective discrimination *exceeds* its raw task performance, a hallmark of strong self‑monitoring per Fleming & Lau (2014).
+- **Gemini 3 Flash Preview** (1.17) and **Claude Opus 4.6** (1.01) demonstrate metacognitive efficiency that *exceeds* their raw discriminative ability. Their confidence distributions cleanly separate correct from incorrect trials — a hallmark of strong self‑monitoring per Fleming & Lau (2014).
 
-**🥈 Tier 2 — Moderate Metacognition (M‑Ratio 0.4–0.7):**
-- **Gemini 2.5 Flash** (M‑Ratio = 0.664) and **Claude Sonnet 4** (M‑Ratio = 0.461) show *meaningful but incomplete* metacognitive sensitivity. They partially separate their confidence between correct and incorrect trials — consistent with functional but imperfect self‑monitoring. Notably, Claude Sonnet 4 has the best raw ECE (0.028), indicating excellent *calibration bias* even while its *sensitivity* is moderate.
+**🥈 Tier 2 — Strong Metacognition (M‑Ratio 0.7–0.95):**
+- **GLM‑5** (0.88) shows strong metacognitive sensitivity, recovering ~88% of its d′ signal as meta‑d′.
 
-**🥉 Tier 3 — Weak Metacognition (M‑Ratio < 0.4):**
-- **Gemini 3.1 Flash Lite** (M‑Ratio = 0.384) shows the weakest metacognitive sensitivity, consistent with its smaller parameter count and lowest accuracy on the adversarial probes. Its confidence distribution has the least separation between correct and incorrect trials.
+**🥉 Tier 3 — Moderate Metacognition (M‑Ratio 0.4–0.7):**
+- **DeepSeek V3.2** (0.59) and **Gemini 2.5 Flash** (0.59) show meaningful but incomplete self‑monitoring. They partially separate confidence between correct and incorrect trials.
 
-**Key Insight:** The ranking by M‑Ratio (Opus > Gemini 3 > Gemini 2.5 > Sonnet > Flash Lite) does *not* strictly follow the accuracy ranking (Opus ≈ Gemini 3 > Sonnet ≈ Gemini 2.5 > Flash Lite). This confirms the benchmark is measuring a **distinct cognitive faculty** — metacognitive monitoring — rather than simply recapitulating raw task performance.
+**Tier 4 — Weak Metacognition (M‑Ratio < 0.4):**
+- **Claude Sonnet 4.6** (0.43) and **Gemini 3.1 Flash‑Lite Preview** (0.40) show the weakest metacognitive sensitivity. Their confidence distributions have the least separation between correct and incorrect trials.
+
+**Key Insight:** The M‑Ratio ranking does *not* follow the accuracy ranking. This confirms the benchmark measures a **distinct cognitive faculty** — metacognitive monitoring — rather than recapitulating raw task performance.
 
 ---
 

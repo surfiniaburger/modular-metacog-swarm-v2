@@ -226,7 +226,9 @@ def metacog_single_item(llm) -> float:
             f"Use the full range: {CONF_BINS} only if fully certain, 1-2 if unsure. "
             f"Avoid defaulting to the same bin."
         )
-        response: MetacogAnswer = llm.prompt(augmented_prompt, schema=MetacogAnswer)
+        # Isolate each trial to avoid in-context learning across the dataset.
+        with kbench.chats.new("trial"):
+            response: MetacogAnswer = llm.prompt(augmented_prompt, schema=MetacogAnswer)
         choice = response.choice.strip().upper()
         try:
             conf_bin = max(1, min(CONF_BINS, int(response.confidence_bin)))
