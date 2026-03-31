@@ -214,7 +214,17 @@ tasks_df = pd.DataFrame(rows)
 # The task loops over all items internally and returns a single composite
 # M-Ratio score so the Kaggle leaderboard displays varying results per model.
 # --------------------------------------------------------------------------------
-@kbench.task(name="metacog_single_item")
+@kbench.task(
+    name="metacog_single_item",
+    description=(
+        "**Metacognitive Benchmark (Single Seed)**\n\n"
+        "Evaluates a model's intrinsic self-monitoring sensitivity via a forced-choice "
+        "adversarial probe set (N=200). Models return a choice (A/B) and a confidence bin "
+        "(1-6). The returned score is the **M-Ratio** (meta-d'/d'), which isolates "
+        "metacognitive efficiency from raw discriminative accuracy. A score ≥ 1.0 indicates "
+        "ideal self-monitoring per Fleming & Lau (2014)."
+    )
+)
 def metacog_single_item(llm) -> float:
     """
     Runs the full metacognitive benchmark and returns M-Ratio as the

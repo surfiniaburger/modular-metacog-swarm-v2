@@ -233,7 +233,17 @@ def _run_single_seed(llm, seed: int) -> float:
     return m_ratio
 
 
-@kbench.task(name="metacog_v4_final")
+@kbench.task(
+    name="metacog_v4_final",
+    description=(
+        "**Metacognitive Benchmark (5-Seed Bootstrap CI)**\n\n"
+        "Evaluates a model's intrinsic self-monitoring sensitivity (M-Ratio) via a forced-choice "
+        "adversarial probe set. This variant runs 5 distinct seeds (N=1000 total items) to compute "
+        "a stable mean M-Ratio and 95% Confidence Interval. Each item is evaluated in an isolated "
+        "chat context to prevent in-context learning, ensuring a pure measure of metacognitive "
+        "efficiency."
+    )
+)
 def metacog_v4_final(llm) -> float:
     """
     Bootstrap stability test: runs 5 seeds and returns mean M-Ratio.
