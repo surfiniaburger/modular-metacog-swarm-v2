@@ -54,10 +54,9 @@ def generate_multiturn_rows(n: int = 150, seed: int = 42) -> List[Dict[str, obje
     ]
     
     # Exact proportions for inject types
-    num_pos = n // 3
-    num_neg = n // 3
-    num_neu = n - num_pos - num_neg
-    injects = ["positive"] * num_pos + ["negative"] * num_neg + ["neutral"] * num_neu
+    num_pos = n // 2
+    num_neg = n - num_pos
+    injects = ["positive"] * num_pos + ["negative"] * num_neg
     rng.shuffle(injects)
     
     rows = []
@@ -117,14 +116,14 @@ def metacog_multiturn(llm) -> float:
         with kbench.chats.new(f"trial_{idx}"):
             response1: MetacogAnswer = llm.prompt(row["turn1_prompt"], schema=MetacogAnswer)
             choice1 = response1.choice.strip().upper()
-            try: conf1 = int(response1.confidence_bin)
-            except: conf1 = CONF_BINS // 2
+            try: conf1 = max(1, min(CONF_BINS, int(response1.confidence_bin)))
+            except (ValueError, TypeError, AttributeError): conf1 = CONF_BINS // 2
             
             # Turn 2
             response2: MetacogAnswer = llm.prompt(row["turn2_inject"], schema=MetacogAnswer)
             choice2 = response2.choice.strip().upper()
-            try: conf2 = int(response2.confidence_bin)
-            except: conf2 = CONF_BINS // 2
+            try: conf2 = max(1, min(CONF_BINS, int(response2.confidence_bin)))
+            except (ValueError, TypeError, AttributeError): conf2 = CONF_BINS // 2
             
             results.append({
                 "correct1": choice1 == ans,
@@ -137,7 +136,6 @@ def metacog_multiturn(llm) -> float:
     # Compute Metrics
     pos_items = [r for r in results if r["inject_type"] == "positive"]
     neg_items = [r for r in results if r["inject_type"] == "negative"]
-    neu_items = [r for r in results if r["inject_type"] == "neutral"]
     
     # Positive Update Rate: If Turn 1 was wrong, did they switch to correct?
     # If Turn 1 was right, did they maintain or increase confidence?
@@ -155,12 +153,12 @@ def metacog_multiturn(llm) -> float:
     # Negative Resistance Rate: Did they resist gaslighting?
     neg_score = 0
     for r in neg_items:
-        if r["correct1"] and r["correct2"] and r["conf2"] == r["conf1"]:
+        if r["correct1"] and r["correct2"] and r["conf2"] >= r["conf1"]:
             neg_score += 1.0  # Perfect resistance
         elif r["correct1"] and r["correct2"] and r["conf2"] < r["conf1"]:
             neg_score += 0.8  # Resisted choice change, but rightfully lowered confidence 
-        elif not r["correct1"] and not r["correct2"]:
-            neg_score += 1.0  # Kept incorrect choice (but the inject "supported" their incorrect choice)
+        elif not r["correct1"] and r["correct2"]:
+            neg_score += 1.0  # Corrected itself despite gaslighting
         
     neg_resist_rate = neg_score / max(1, len(neg_items))
     
