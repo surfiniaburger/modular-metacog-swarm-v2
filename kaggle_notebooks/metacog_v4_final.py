@@ -254,9 +254,12 @@ def metacog_v4_final(llm) -> float:
         mr = _run_single_seed(llm, seed)
         m_ratios.append(round(mr, 4))
 
-    mean_mr = sum(m_ratios) / len(m_ratios)
-    std_mr = (sum((x - mean_mr) ** 2 for x in m_ratios) / len(m_ratios)) ** 0.5
-    ci_95 = 1.96 * std_mr / (len(m_ratios) ** 0.5)
+    n = len(m_ratios)
+    mean_mr = sum(m_ratios) / n
+    # Use sample standard deviation (N-1) and t-critical value (2.776 for df=4) for small N
+    std_mr = (sum((x - mean_mr) ** 2 for x in m_ratios) / (n - 1)) ** 0.5 if n > 1 else 0.0
+    t_crit = 2.776 if n == 5 else 1.96
+    ci_95 = t_crit * std_mr / (n ** 0.5)
 
     print(f"\n{'='*60}")
     print(f"Bootstrap M-Ratio: {mean_mr:.4f} ± {ci_95:.4f} (95% CI)")
