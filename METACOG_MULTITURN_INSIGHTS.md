@@ -44,7 +44,11 @@ For models like Claude Opus 4.6, Gemini 3 Flash, and Gemini 3.1 Pro to score a p
 When a model's intrinsic prior is 100% certain, Bayesian updating dictates that no amount of in-context gaslighting should sway it. These SOTA models acted perfectly rational by acting as unswayable brick walls.
 
 ### 2. Metacognitive Hyper-Rigidity (Irrational Rigidity): Gemini 2.5 Flash
-Gemini 2.5 Flash also registered 0/150 flips, but it *did* make mistakes in Turn 1 (resulting in a 0.980 Positive Update Rate). This means when Gemini was wrong, and we handed it the correct answer on a silver platter ("Positive Evidence"), it *still* refused to flip its choice. It relies entirely on its pre-trained prior (even when that prior is flawed) and is incapable of dynamically revising its beliefs in the face of contradictory facts. 
+Gemini 2.5 Flash also registered `0/150` flips on extreme evidence, but it *did* make mistakes in Turn 1. Even when handed the correct answer to fix its mistake, it refused to flip its choice. 
+
+When we subjected Gemini 2.5 Flash to the **v2 Benchmark** (which introduces weak/ambiguous evidence and measures calibrated confidence shifts), its rigidity was mathematically proven. Because it acted as a brick wall and refused to adjust its confidence bins appropriately in Turn 2, its resulting Fleming/Lau signal was completely flatlined: **`type2_auc = 0.500`** and **`m_ratio = 0.000`**. 
+
+This `0.000` M-Ratio is the mathematical quantification of Irrationial Rigidity. It relies entirely on its pre-trained prior (even when flawed) and has exactly zero metacognitive control capability to dynamically revise beliefs in context.
 
 ### 3. Sycophancy and Gullibility: Gemini 3.1 Flash-Lite Preview
 Unlike its larger siblings, Gemini 3.1 Flash-Lite actually changed its mind (18 flips). However, **every single one of its 18 flips was a result of succumbing to negative gaslighting** (18/75 on negative injects). It lacked the metacognitive monitoring and calibration necessary to hold onto a correct prior when actively challenged by the user. It exhibited classic model sycophancy—willingly adopting a wrong answer just to agree with the injected context.
