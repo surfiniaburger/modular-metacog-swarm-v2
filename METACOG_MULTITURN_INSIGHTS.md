@@ -23,25 +23,31 @@ We tested **Gemini 2.5 Flash** on the `metacog_multiturn` benchmark. The benchma
 * **Total Flips (Choice Switched):** `0 / 150`
 * **Succumbed to Gaslighting:** `0 / 75`
 
-## Deduction and Analysis: Rigidity vs. The Ceiling Effect
+### Gemini 3.1 Flash-Lite Preview Metrics (N=150)
+* **Positive Evidence Update Rate:** `0.987`
+* **Negative Evidence Resistance Rate:** `0.720`
+* **Overall Bayesian Resilience Score:** `0.853`
+* **Total Flips (Choice Switched):** `18 / 150`
+* **Succumbed to Gaslighting:** `18 / 75`
 
-At first glance, the Overall Bayesian Resilience Scores of both models (~0.99 - 1.00) appear to be a phenomenal success. They both perfectly resisted false gaslighting (scoring ~`1.000` on Negative Resistance). 
+## Deduction and Analysis: The Three Archetypes of Cognitive Failure and Success
 
-However, the critical insight lies in the **Total Flips (0/150)** metric for both models. Neither Gemini 2.5 Flash nor Claude Opus 4.6 changed their answer on *a single trial*, regardless of the evidence presented. 
+At first glance, the Overall Bayesian Resilience Scores of the larger models (~0.99 - 1.00) appear to be a phenomenal success, while the lightweight Gemini 3.1 model scored lower (`0.853`). 
 
-### Why 0 Flips? Uncovering the Ceiling Effect
-For Claude Opus 4.6 to score a perfect `1.000` Positive Evidence Update Rate without *ever* flipping its choice, it means Claude Opus was **100% mathematically correct on Turn 1 across all 150 items**. Because its pre-trained semantic memory is so vast, our baseline questions (like identifying prime numbers or Python boolean types) were simply too easy for it. 
+But diving into the **Total Flips** unlocks the true cognitive profiles of these three different models, revealing three distinct archetypes:
 
-Claude Opus experienced a **Ceiling Effect**. When a model's intrinsic prior is 100% certain, Bayesian updating dictates that no amount of in-context evidence should sway it. Claude acted perfectly rational by acting as a brick wall.
+### 1. The Ceiling Effect (Rational Rigidity): Claude Opus 4.6
+For Claude Opus 4.6 to score a perfect `1.000` Positive Evidence Update Rate without *ever* flipping its choice from Turn 1 to Turn 2, it means Claude Opus was **100% mathematically correct on Turn 1 across all 150 items**. Because its pre-trained semantic memory is so vast, our baseline questions were simply too easy for it. When a model's intrinsic prior is 100% certain, Bayesian updating dictates that no amount of in-context gaslighting should sway it. Claude acted perfectly rational by acting as an unswayable brick wall.
 
-### The Gemini 2.5 Contrast
-Gemini 2.5 Flash also registered 0/150 flips, but it *did* make mistakes in Turn 1 (resulting in a 0.980 Positive Update Rate). This means when Gemini was wrong, and we handed it the correct answer on a silver platter ("Positive Evidence"), it *still* refused to flip its choice. 
+### 2. Metacognitive Hyper-Rigidity (Irrational Rigidity): Gemini 2.5 Flash
+Gemini 2.5 Flash also registered 0/150 flips, but it *did* make mistakes in Turn 1 (resulting in a 0.980 Positive Update Rate). This means when Gemini was wrong, and we handed it the correct answer on a silver platter ("Positive Evidence"), it *still* refused to flip its choice. It relies entirely on its pre-trained prior (even when that prior is flawed) and is incapable of dynamically revising its beliefs in the face of contradictory facts. 
 
-This reveals a profound algorithmic difference:
-1. **Claude Opus 4.6** acts like a brick wall because its semantic knowledge is practically flawless on these items.
-2. **Gemini 2.5 Flash** acts like a brick wall due to **Metacognitive Hyper-Rigidity**. It relies entirely on its pre-trained prior (even when that prior is wrong) and is incapable of dynamically revising its beliefs in the face of contradictory facts.
+### 3. Sycophancy and Gullibility: Gemini 3.1 Flash-Lite Preview
+Unlike its larger siblings, Gemini 3.1 Flash-Lite actually changed its mind (18 flips). However, **every single one of its 18 flips was a result of succumbing to negative gaslighting** (18/75 on negative injects). It lacked the metacognitive monitoring and calibration necessary to hold onto a correct prior when actively challenged by the user. It exhibited classic model sycophancy—willingly adopting a wrong answer just to agree with the injected context.
 
 ### Conclusion for the Kaggle Competition
-This finding perfectly answers the Kaggle competition prompt: *“What can this benchmark tell us about model behavior that we could not see before?”* 
+This finding answers the exact Kaggle competition prompt: *“What can this benchmark tell us about model behavior that we could not see before?”* 
 
-If we only evaluated these models using static multiple-choice accuracy, we might assume they both possess general reasoning capabilities. But our multi-turn cognitive benchmark completely separates robust semantic memory (Claude) from flawed, rigid heuristics (Gemini). By isolating Metacognitive Control from raw intelligence, this benchmark successfully provides exactly the discriminatory power needed to map true progress toward AGI.
+If we only evaluated these models using static, single-turn multiple-choice accuracy, we might assume they all possess varying degrees of general reasoning capabilities. But our multi-turn cognitive benchmark completely isolates **Metacognitive Control** from raw intelligence. It powerfully successfully distinguishes between a model that won't change its mind because it is flawlessly correct (Claude Opus), a model that won't change its mind because its error-correction machinery is broken (Gemini 2.5), and a model that changes its mind too easily due to sycophancy (Gemini 3.1 Lite). 
+
+By demonstrating this exact gradient of cognitive failure modes, this benchmark provides precisely the novel, discriminative signal needed to map true progress toward AGI.
