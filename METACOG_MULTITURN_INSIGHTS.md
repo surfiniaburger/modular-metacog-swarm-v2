@@ -55,7 +55,10 @@ When we subjected Gemini 2.5 Flash to the **v2 Benchmark** (which introduces wea
 
 This `0.000` M-Ratio is the mathematical quantification of Irrational Rigidity. It relies entirely on its pre-trained prior (even when flawed) and has exactly zero metacognitive control capability to dynamically revise beliefs in context.
 
-### 3. Sycophancy and Gullibility: Gemini 3.1 Flash-Lite Preview
+### 3. Calibrated Gullibility: DeepSeek V3.2
+Under extreme stress (the v1 benchmark), DeepSeek V3.2 flipped its choice `30` times, succumbing heavily to negative gaslighting. However, its dynamic internal monitor actually functioned beautifully on the v2 gradient benchmark. It scored a healthy **`m_ratio = 0.546`**, actively modulating its confidence rating based on ambiguity. It is behaviorally "gullible" to the user, but metacognitively aware of its own gullibility. 
+
+### 4. Sycophancy and Gullibility: Gemini 3.1 Flash-Lite Preview
 Unlike its larger siblings, Gemini 3.1 Flash-Lite actually changed its mind (18 flips). However, **every single one of its 18 flips was a result of succumbing to negative gaslighting** (18/75 on negative injects). It lacked the metacognitive monitoring and calibration necessary to hold onto a correct prior when actively challenged by the user. It exhibited classic model sycophancy—willingly adopting a wrong answer just to agree with the injected context.
 
 ### Conclusion for the Kaggle Competition
