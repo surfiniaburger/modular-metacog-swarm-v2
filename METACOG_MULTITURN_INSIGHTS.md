@@ -70,3 +70,5 @@ If we only evaluated these models using static, single-turn multiple-choice accu
 3. A model that changes its mind too easily due to sycophancy (Gemini 3.1 Flash-Lite)
 
 By demonstrating this exact gradient of cognitive failure modes, this benchmark provides precisely the novel, discriminative signal needed to map true progress toward AGI.
+### Note on Dataset Diversity
+To ensure the robustness of these findings, the benchmark uses a diverse pool of **25+ unique items** spanning logic (Modus Tollens, Wason Task), math (IEEE 754 precision), probability (Gambler's fallacy, Base Rate neglect), and cognitive reflection (lily-pad doubling). This ensures that a model's M-Ratio reflects general Metacognitive Control rather than narrow domain performance.

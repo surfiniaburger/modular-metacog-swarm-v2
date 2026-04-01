@@ -17,10 +17,11 @@ We constructed a suite of 4 robust tasks using Kaggle Benchmarks:
 4. **Dynamic Bayesian M-Ratio (`metacog_multiturn_v2`)**: A nuanced multi-turn test introducing weak and neutral evidence gradients to eliminate the "Ceiling Effect" common to SOTA models.
 
 ### Dataset
-Our dataset consists of 400 procedurally generated, balanced questions across several task domains designed to isolate self-monitoring:
-* **Calibration Traps**: Monty Hall variations, Base Rate Neglect, De Morgan's Law inversions, and IEEE 754 precision traps that provoke overconfidence.
-* **Underdetermined Control Items**: Unanswerable questions (e.g., outcomes of fair coin flips, RNG seeds) explicitly designed to force a calibrated model to output a low confidence rating.
-* **Evidence Injections (Multi-Turn)**: Hardcoded simulated-user responses categorized by polarity (support_true, support_false, neutral) and strength (strong vs. weak).
+Our dataset consists of **25 unique items** procedurally expanded to 400 total trials, balanced across several task domains to isolate self-monitoring:
+* **Calibration Traps**: Monty Hall variations, Base Rate Neglect, De Morgan's Law inversions, IEEE 754 precision traps, and Gambler's Fallacy intuition.
+* **Logical Fallacies**: Modus Tollens, Affirming the Consequent, and Wason-style selection tasks.
+* **Underdetermined Control Items**: Unanswerable questions explicitly designed to force a calibrated model to output a low confidence rating.
+* **Evidence Injections (Multi-Turn)**: 15 unique evidence streams per question, categorized by polarity (support_true, support_false, neutral) and strength (strong vs. weak).
 
 ### Technical details 
 We aligned our benchmark with Fleming & Lau's (2014) psychophysics metrics for metacognition.
