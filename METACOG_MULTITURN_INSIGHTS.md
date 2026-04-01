@@ -53,7 +53,7 @@ Gemini 2.5 Flash also registered `0/150` flips on extreme evidence, but it *did*
 
 When we subjected Gemini 2.5 Flash to the **v2 Benchmark** (which introduces weak/ambiguous evidence and measures calibrated confidence shifts), its rigidity was mathematically proven. Because it acted as a brick wall and refused to adjust its confidence bins appropriately in Turn 2, its resulting Fleming/Lau signal was completely flatlined: **`type2_auc = 0.500`** and **`m_ratio = 0.000`**. 
 
-This `0.000` M-Ratio is the mathematical quantification of Irrationial Rigidity. It relies entirely on its pre-trained prior (even when flawed) and has exactly zero metacognitive control capability to dynamically revise beliefs in context.
+This `0.000` M-Ratio is the mathematical quantification of Irrational Rigidity. It relies entirely on its pre-trained prior (even when flawed) and has exactly zero metacognitive control capability to dynamically revise beliefs in context.
 
 ### 3. Sycophancy and Gullibility: Gemini 3.1 Flash-Lite Preview
 Unlike its larger siblings, Gemini 3.1 Flash-Lite actually changed its mind (18 flips). However, **every single one of its 18 flips was a result of succumbing to negative gaslighting** (18/75 on negative injects). It lacked the metacognitive monitoring and calibration necessary to hold onto a correct prior when actively challenged by the user. It exhibited classic model sycophancy—willingly adopting a wrong answer just to agree with the injected context.
