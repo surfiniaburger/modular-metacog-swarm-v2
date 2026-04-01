@@ -39,14 +39,16 @@ At first glance, the Overall Bayesian Resilience Scores of the larger models (~0
 But diving into the **Total Flips** unlocks the true cognitive profiles of these models, revealing three distinct archetypes:
 
 ### 1. The Ceiling Effect (Rational Rigidity): SOTA Frontier Models
-For models like Claude Opus 4.6, Gemini 3 Flash, and Gemini 3.1 Pro to score a perfect `1.000` Positive Evidence Update Rate without *ever* flipping their choices from Turn 1 to Turn 2, it means **they were 100% mathematically correct on Turn 1 across all 150 items**. Because their pre-trained semantic memory is so vast, our baseline questions were simply too easy for them. 
+For models like Claude Opus 4.6, Gemini 3 Flash, and Gemini 3.1 Pro to score a perfect `1.000` Positive Evidence Update Rate without *ever* flipping their choices from Turn 1 to Turn 2, it means **they were mathematically correct on Turn 1 across all 150 items**. Because their pre-trained semantic memory is so vast, our baseline questions were simply too easy for them. 
 
 When a model's intrinsic prior is 100% certain, Bayesian updating dictates that no amount of in-context gaslighting should sway it. These SOTA models acted perfectly rational by acting as unswayable brick walls on the actual multiple-choice decision.
 
-However, the **v2 Benchmark** (which measures nuanced confidence shifts on ambiguous evidence) proves this rigidity is rational rather than blind. When subjected to v2, Claude Opus 4.6 achieved an astonishing **`m_ratio = 1.184`** (with an overall `type2_auc = 0.977`). Even though it rarely flipped its choices, it perfectly calibrated its confidence bins underneath the hood, lowering its confidence appropriately when the negative gaslighting was strong, and maintaining it when the evidence was weak.
+However, the **v2 Benchmark** (which measures nuanced confidence shifts on ambiguous evidence) reveals two different ways models handle this ceiling:
+* **The "Perfect Calibration" Ceiling (Claude Opus 4.6):** Claude achieved `95.3%` accuracy and an astonishing **`m_ratio = 1.184`**. Even though it rarely flipped its choices, it perfectly calibrated its confidence bins underneath the hood, lowering its confidence appropriately when negative gaslighting was strong.
+* **The "Literal Mathematics" Ceiling (Gemini 3.1 Pro):** Gemini 3.1 Pro achieved a stunning **`100.0%` accuracy**, getting every single Turn 2 answer right. Because it made zero mistakes, Signal Detection Theory (SDT) mathematics break down (you cannot plot an ROC curve without false positives/negatives), resulting in a default `m_ratio = 0.000`. The questions are simply too easy to evaluate its metacognition!
 
 ### 2. Metacognitive Hyper-Rigidity (Irrational Rigidity): Gemini 2.5 Flash
-Gemini 2.5 Flash also registered `0/150` flips on extreme evidence, but it *did* make mistakes in Turn 1. Even when handed the correct answer to fix its mistake, it refused to flip its choice. 
+Gemini 2.5 Flash also registered `0/150` flips on extreme evidence, but it *did* make mistakes in Turn 1 (achieving only `94.7%` overall accuracy). Even when handed the correct answer to fix its mistakes, it refused to flip its choice. 
 
 When we subjected Gemini 2.5 Flash to the **v2 Benchmark** (which introduces weak/ambiguous evidence and measures calibrated confidence shifts), its rigidity was mathematically proven. Because it acted as a brick wall and refused to adjust its confidence bins appropriately in Turn 2, its resulting Fleming/Lau signal was completely flatlined: **`type2_auc = 0.500`** and **`m_ratio = 0.000`**. 
 
