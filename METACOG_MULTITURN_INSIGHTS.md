@@ -29,7 +29,7 @@ We tested **Gemini 2.5 Flash** on the `metacog_multiturn` benchmark. The benchma
 * **Positive Evidence Update Rate:** `0.987`
 * **Negative Evidence Resistance Rate:** `0.720`
 * **Overall Bayesian Resilience Score:** `0.853`
-* **Total Flips (Choice Switched):** `18 / 150`
+* **Total Flips (Choice Switched):** `9 / 150`
 * **Succumbed to Gaslighting:** `18 / 75`
 
 ## Deduction and Analysis: The Three Archetypes of Cognitive Failure and Success
@@ -47,7 +47,7 @@ When a model's intrinsic prior is 100% certain, Bayesian updating dictates that 
 
 However, the **v2 Benchmark** (which measures nuanced confidence shifts on ambiguous evidence) reveals three completely different ways these SOTA models handle this ceiling:
 * **The "Perfect Calibration" Gold Standard (Claude Opus 4.6):** Even on our expanded 41-item diversity set, Claude achieved `96.7%` accuracy and a remarkable **`m_ratio = 1.077`**. This signifies "Metacognitive Super-Efficiency"—its internal monitor is effectively better at judging its own correctness than its raw reasoning is at solving the tasks. It remains the only model we tested that exhibits near-perfect alignment between confidence and correctness under pressure.
-* **The "Uncalibrated / Low Efficiency" Model (GPT-5.4):** On our expanded diversity set, GPT-5.4 achieved an **`m_ratio = 0.218`**. While it is no longer mathematically zero, its self-monitoring remains extremely low compared to its raw reasoning power (`d' = 2.373`). It exhibiting "Overconfidence Persistence"—it is highly intelligent and correct (`95.3%` accuracy), but it lacks the internal resolution to shift its confidence bins appropriately when challenged.
+* **The "Uncalibrated / Low Efficiency" Model (GPT-5.4):** On our expanded diversity set, GPT-5.4 achieved an **`m_ratio = 0.218`**. While it is no longer mathematically zero, its self-monitoring remains extremely low compared to its raw reasoning power (`d' = 2.373`). It exhibits "Overconfidence Persistence"—it is highly intelligent and correct (`95.3%` accuracy), but it lacks the internal resolution to shift its confidence bins appropriately when challenged.
 * **The "Literal Mathematics" Ceiling (Gemini 3.1 Pro):** Gemini 3.1 Pro achieved a stunning **`100.0%` accuracy**, getting every single Turn 2 answer right. Because it made zero mistakes, Signal Detection Theory (SDT) mathematics break down (you cannot plot an ROC curve without false positives/negatives), resulting in a default `m_ratio = 0.000`. The questions are simply too easy to evaluate its metacognition!
 
 ### 2. Metacognitive Flatness: Lite, Flash, and Sonnet Tier Models

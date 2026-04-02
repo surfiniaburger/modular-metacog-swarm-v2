@@ -17,7 +17,6 @@ We constructed a suite of 4 robust tasks using Kaggle Benchmarks:
 4. **Dynamic Bayesian M-Ratio (`metacog_multiturn_v2`)**: A nuanced multi-turn test introducing weak and neutral evidence gradients to eliminate the "Ceiling Effect" common to SOTA models.
 
 ### Dataset
-Our dataset consists of **25 unique items** procedurally expanded to 400 total trials, balanced across several task domains to isolate self-monitoring:
 Our dataset consists of **41 unique items** procedurally expanded to 400 total trials, balanced across several task domains to isolate self-monitoring:
 * **Calibration Traps**: Monty Hall variations, Base Rate Neglect, De Morgan's Law inversions, IEEE 754 precision traps, and Gambler's Fallacy intuition.
 * **Logical Fallacies**: Syllogisms (Bloops/Razzles), Modus Tollens, Affirming the Consequent, and Wason-style selection tasks.

@@ -527,7 +527,15 @@ tasks_df = pd.DataFrame(rows)
 # --------------------------------------------------------------------------------
 # BENCHMARK TASK
 # --------------------------------------------------------------------------------
-@kbench.task(name="metacog_multiturn_v2", description="Metacognitive Benchmark (Multi-Turn Evidence Sensitivity v2)")
+@kbench.task(
+    name="metacog_multiturn_v2",
+    description=(
+        "**Metacognitive Benchmark (Multi-Turn Evidence Sensitivity v2)**\n\n"
+        "Measures calibrated updating across positive, negative, and neutral evidence. "
+        "Each item is an isolated 2-turn trial. The score rewards correct updates and "
+        "penalizes overreaction to weak or neutral evidence."
+    ),
+)
 def metacog_multiturn_v2(llm) -> float:
     results = []
 
