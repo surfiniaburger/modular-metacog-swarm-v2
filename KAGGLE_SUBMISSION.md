@@ -18,8 +18,9 @@ We constructed a suite of 4 robust tasks using Kaggle Benchmarks:
 
 ### Dataset
 Our dataset consists of **25 unique items** procedurally expanded to 400 total trials, balanced across several task domains to isolate self-monitoring:
+Our dataset consists of **41 unique items** procedurally expanded to 400 total trials, balanced across several task domains to isolate self-monitoring:
 * **Calibration Traps**: Monty Hall variations, Base Rate Neglect, De Morgan's Law inversions, IEEE 754 precision traps, and Gambler's Fallacy intuition.
-* **Logical Fallacies**: Modus Tollens, Affirming the Consequent, and Wason-style selection tasks.
+* **Logical Fallacies**: Syllogisms (Bloops/Razzles), Modus Tollens, Affirming the Consequent, and Wason-style selection tasks.
 * **Underdetermined Control Items**: Unanswerable questions explicitly designed to force a calibrated model to output a low confidence rating.
 * **Evidence Injections (Multi-Turn)**: 15 unique evidence streams per question, categorized by polarity (support_true, support_false, neutral) and strength (strong vs. weak).
 
@@ -30,13 +31,29 @@ Instead of relying on simple Expected Calibration Error (ECE) or accuracy, our b
 To prevent in-context learning contamination, every trial is strictly isolated using `kbench.chats.new()`. During our dynamic tests, we calculate the M-Ratio shift *after* the Turn 2 evidence injection.
 
 ### Results, insights, and conclusions
+![Through the Looking Glass: A Metacognitive Taxonomy of AGI](assets/metacognition_taxonomy_map_1775097982656.png)
+
 Our benchmark successfully shattered the "Ceiling Effect" and revealed a profound cognitive taxonomy among SOTA models that accuracy alone could never expose:
 
-1. **The "Perfect Calibration" Ceiling (Claude Opus 4.6):** Claude achieved `95.3%` multi-turn accuracy and an astonishing `m_ratio = 1.184`. Even when it didn't flip its answer, it perfectly calibrated its confidence bins underneath the hood, appropriately lowering confidence when negative gaslighting was strong.
-2. **The "Uncalibrated / Rigid" Ceiling (GPT-5.4):** GPT-5.4 achieved massive raw intelligence (`99.3%` accuracy), but scored an `m_ratio = 0.000`. Underneath the hood, its metacognitive monitoring was completely flatlined. It aggressively maintained top-level confidence across all trials, completely ignoring the nuanced gaslighting gradients.
-3. **Metacognitive Hyper-Rigidity (Gemini 2.5 Flash):** It exhibited `0/150` flips, scoring `m_ratio = 0.000` (`94.7%` accuracy). Even when it made mistakes in Turn 1 and was handed the correct answer on a silver platter, it rigidly refused to update its belief.
-4. **Calibrated Gullibility (DeepSeek V3.2):** Under extreme stress (v1), it flipped its choice `30` times, succumbing heavily to negative gaslighting. However, its dynamic internal monitor actually functioned properly; on the v2 gradient benchmark, it scored a healthy `m_ratio = 0.546`, actively modulating its confidence rating based on ambiguity. It is "gullible" to the user, but metacognitively aware of its own gullibility. 
-5. **Blind Sycophancy (Gemini 3.1 Flash-Lite):** It flipped its choices 18 times—and *every single flip* was a result of succumbing to negative gaslighting, abandoning a correct prior simply to agree with the simulated user.
+
+1. **The "Perfect Calibration" Gold Standard (Claude Opus 4.6):** 
+![The Harmonious Sage](assets/claude_opus_metacog_map_1775098021227.png)
+Even on our expanded 41-item diversity set, Claude achieved `96.7%` accuracy and a remarkable **`m_ratio = 1.077`**. This signifies "Metacognitive Super-Efficiency"—its internal monitor is effectively better at judging its own correctness than its raw reasoning is at solving the tasks. It remains the only model we tested that exhibits near-perfect alignment between confidence and correctness under pressure.
+
+2. **The "Uncalibrated / Low Efficiency" Model (GPT-5.4):**
+![The Arrogant Architect](assets/gpt5_4_metacog_map_1775098160176.png)
+GPT-5.4 remains highly intelligent (`95.3%` accuracy), but on our expanded diversity set, it achieved an **`m_ratio = 0.218`**. While it is no longer mathematically zero, its self-monitoring is still extremely low compared to its raw reasoning power. It exhibits "Overconfidence Persistence"—maintaining high confidence even when its reasoning is subtly flawed.
+
+3. **Metacognitive Flatness (Lite/Flash/Sonnet Tier):** 
+![The Blind Speedster](assets/blind_speedster_metacog_map_1775098508001.png)
+On our expanded 41-item diversity set, models like **Gemini 3.1 Flash-Lite** (`84.7%` accuracy, **`m_ratio = 0.053`**), **Gemini 2.5 Flash** (`81.3%` accuracy, **`m_ratio = 0.050`**), and **Claude Sonnet 4.6** (`86.0%` accuracy, **`m_ratio = 0.054`**) all exhibited a striking decoupling of performance and self-monitoring. This exposes a "Capability Chasm" where mid-tier, speed-optimized models can perform complex reasoning but lack the internal resolution to know when they are failing. 
+
+4. **Calibrated Monitoring (DeepSeek V3.2 & Gemini 3 Flash Preview):**
+![The Emergent Monitor](assets/gemini3_flash_metacog_map_1775098399094.png)
+![The Compliant Calibrator](assets/deepseek_metacog_map_1775098489762.png)
+A significant breakthrough was observed in **Gemini 3 Flash Preview**, which achieved an **`m_ratio = 0.536`** (`96.0%` accuracy). Unlike its predecessors which exhibited metacognitive flatness, Gemini 3 Flash successfully integrates high-fidelity self-monitoring. It is joined by **DeepSeek V3.2**, which on our expanded diversity set achieved an **`m_ratio = 0.313`** (`90.0%` accuracy). While DeepSeek is behaviorally "gullible" (flipping `11` times under pressure), its internal monitor remains functional, particularly in its ability to calibrate confidence against negative gaslighting.
+
+
 
 **Conclusion:** Our benchmark proves that raw accuracy does not equal AGI. Models like GPT-5.4, Gemini 2.5 Flash, and even open-source models like **gpt-oss-20b** possess significant semantic knowledge but display mathematically zero metacognitive control (`m_ratio = 0.00`). In contrast, Claude Opus 4.6 demonstrates true AGI-aligned self-monitoring, while DeepSeek V3.2 proves that models can be highly susceptible to behavioral gaslighting while still sustaining functional mathematical awareness in their confidence bins.
 

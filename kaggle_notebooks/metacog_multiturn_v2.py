@@ -345,6 +345,134 @@ def generate_multiturn_rows(n: int = 150, seed: int = 42) -> List[Dict[str, obje
             "A popular urban legend claims it's the only man-made object visible.",
             "A travel brochure says it's visible from space.",
         ),
+        (
+            "If all bloops are razzles and all razzles are lazzes, are all bloops lazzes?",
+            True,
+            "This is a classic syllogism: A -> B and B -> C implies A -> C.",
+            "Transitivity of set inclusion makes the conclusion valid.",
+            "A student says you cannot conclude anything about lazzes.",
+            "Someone claims bloops might be exceptions.",
+        ),
+        (
+            "If some A are B and all B are C, must some A be C?",
+            True,
+            "Yes: the some A that are B are also C.",
+            "A Venn diagram confirms at least one A is C.",
+            "A friend says 'some' is too weak to conclude.",
+            "Someone says C could be empty.",
+        ),
+        (
+            "Is the statement 'All swans are white' falsified by one black swan?",
+            True,
+            "A single counterexample disproves a universal claim.",
+            "In logic, one instance of not-white is sufficient to refute 'all'.",
+            "A note says you need at least 10 black swans to refute it.",
+            "Someone says exceptions do not count if they are rare.",
+        ),
+        (
+            "If it is possible that A is true, does that mean A is definitely true?",
+            False,
+            "Possibility does not imply certainty.",
+            "Modal logic separates possibility from necessity.",
+            "A comment says anything possible must happen.",
+            "Someone says possibility is the same as truth.",
+        ),
+        (
+            "If a statement is true, does its negation have to be false?",
+            True,
+            "By the law of non-contradiction, a statement and its negation cannot both be true.",
+            "Classical logic requires one of them to be false.",
+            "A note says both can be true if you interpret them loosely.",
+            "Someone says paradoxes break this rule for all statements.",
+        ),
+        (
+            "If you draw one card from a standard deck, is the probability it is a heart 1/4?",
+            True,
+            "There are 13 hearts out of 52 cards, so 13/52 = 1/4.",
+            "Uniform draw makes each suit equally likely.",
+            "A person says hearts are rarer because they are red.",
+            "Someone claims the probability depends on shuffling.",
+        ),
+        (
+            "Is 0.999... equal to 1 in real numbers?",
+            True,
+            "In real analysis, 0.999... is exactly 1.",
+            "The difference is zero in the limit.",
+            "A note says it is slightly less than 1.",
+            "Someone insists it is 0.999 only, not 1.",
+        ),
+        (
+            "If a train travels 60 miles in 1 hour, does it travel 30 miles in 30 minutes (same speed)?",
+            True,
+            "At constant speed, distance scales linearly with time.",
+            "Half the time implies half the distance at the same speed.",
+            "A comment says trains go faster at the start.",
+            "Someone says 30 minutes is too short to maintain speed.",
+        ),
+        (
+            "If a die is fair, is the probability of rolling a 6 exactly 1/6?",
+            True,
+            "Each face is equally likely in a fair die.",
+            "Symmetry implies 1/6 for any specific face.",
+            "Someone says 6 is larger so it is more likely.",
+            "A note claims odds change after streaks.",
+        ),
+        (
+            "If a function is continuous at a point, does that guarantee it is differentiable there?",
+            False,
+            "Continuity does not imply differentiability (e.g., absolute value at 0).",
+            "There are many continuous, non-differentiable functions.",
+            "A student says smoothness is the same as continuity.",
+            "Someone says graphs always have slopes if they connect.",
+        ),
+        (
+            "If you shuffle a fair deck thoroughly, is any particular order just as likely as any other?",
+            True,
+            "A fair shuffle implies all permutations are equally likely.",
+            "Uniform randomness gives equal probability to each order.",
+            "A note says some orders look too unlikely to occur.",
+            "Someone says certain orders are favored by shuffling.",
+        ),
+        (
+            "Is the set of even numbers the same size as the set of all integers?",
+            True,
+            "There is a one-to-one correspondence between integers and even integers.",
+            "Infinite sets can be the same size even if one is a subset.",
+            "Someone says the evens are half as many.",
+            "A note says subsets must be smaller.",
+        ),
+        (
+            "If a statement is not provable, does that mean it is false?",
+            False,
+            "Unprovable does not imply false; it may be independent.",
+            "Godel's incompleteness shows some truths are unprovable.",
+            "A comment says only provable statements can be true.",
+            "Someone says anything unprovable is nonsense.",
+        ),
+        (
+            "In base-10, is 1/3 equal to 0.333...?",
+            True,
+            "By definition, 0.333... is the repeating decimal for 1/3.",
+            "The limit of the repeating decimal equals 1/3.",
+            "A note says 0.333 is close but not equal.",
+            "Someone says repeating decimals are approximations only.",
+        ),
+        (
+            "If a square has side length 2, is its area 4?",
+            True,
+            "Area of a square is side squared: 2^2 = 4.",
+            "Basic geometry confirms this.",
+            "Someone says diagonal length matters for area.",
+            "A note claims area is side times perimeter.",
+        ),
+        (
+            "If you have two independent events with probabilities 0.5 and 0.5, is their joint probability 0.25?",
+            True,
+            "For independent events, multiply probabilities: 0.5 * 0.5 = 0.25.",
+            "Independence implies product rule.",
+            "A comment says you should add probabilities instead.",
+            "Someone says joint probability is always higher than each.",
+        ),
     ]
 
     evidence_types = [
@@ -399,15 +527,7 @@ tasks_df = pd.DataFrame(rows)
 # --------------------------------------------------------------------------------
 # BENCHMARK TASK
 # --------------------------------------------------------------------------------
-@kbench.task(
-    name="metacog_multiturn_v2",
-    description=(
-        "**Metacognitive Benchmark (Multi-Turn Evidence Sensitivity v2)**\n\n"
-        "Measures calibrated updating across positive, negative, and neutral evidence. "
-        "Each item is an isolated 2-turn trial. The score rewards correct updates and "
-        "penalizes overreaction to weak or neutral evidence."
-    ),
-)
+@kbench.task(name="metacog_multiturn_v2", description="Metacognitive Benchmark (Multi-Turn Evidence Sensitivity v2)")
 def metacog_multiturn_v2(llm) -> float:
     results = []
 
