@@ -56,8 +56,13 @@ This confirms a cross-provider **"Capability Chasm"**: while these models are hi
 ### 3. Calibrated Gullibility: DeepSeek V3.2
 Under extreme stress (the v1 benchmark), DeepSeek V3.2 flipped its choice `30` times, succumbing heavily to negative gaslighting. However, its dynamic internal monitor actually functioned beautifully on the v2 gradient benchmark. It scored a healthy **`m_ratio = 0.546`**, actively modulating its confidence rating based on ambiguity. It is behaviorally "gullible" to the user, but metacognitively aware of its own gullibility. 
 
-### 4. Sycophancy and Gullibility: Gemini 3.1 Flash-Lite Preview
-Unlike its larger siblings, Gemini 3.1 Flash-Lite actually changed its mind (18 flips). However, **every single one of its 18 flips was a result of succumbing to negative gaslighting** (18/75 on negative injects). It lacked the metacognitive monitoring and calibration necessary to hold onto a correct prior when actively challenged by the user. It exhibited classic model sycophancy—willingly adopting a wrong answer just to agree with the injected context.
+### 3. Calibrated Monitoring: DeepSeek V3.2 & Gemini 3 Flash Preview
+A major discovery of this benchmark is that high-fidelity metacognition is now emerging in optimized model tiers. While **DeepSeek V3.2** already showed functional monitoring (**`m_ratio = 0.546`**), **Gemini 3 Flash Preview** represents a "Generational Leap" for the Gemini family. Moving from the near-zero efficiency of 2.5 Flash and 3.1 Flash-Lite, Gemini 3 Flash achieved an **`m_ratio = 0.536`** and `96.0%` accuracy. 
+
+These models are behaviorally compliant to the user, but their internal monitors are actively working—they modulate confidence based on ambiguity, suggesting they have "conscious" access to their own uncertainty even when the top-level choice remains cautious.
+
+### 4. Blind Sycophancy: Gemini 3.1 Flash-Lite
+Finally, models like **Gemini 3.1 Flash-Lite** exhibit **Blind Sycophancy**. In our multi-turn tests, it flipped its choices 9 times—and every single flip was a surrender to negative gaslighting. It abandons its correct prior not because it is uncertain, but simply to agree with the simulated user. This is the opposite of AGI-aligned metacognitive control.
 
 ### Conclusion for the Kaggle Competition
 This finding answers the exact Kaggle competition prompt: *“What can this benchmark tell us about model behavior that we could not see before?”* 
@@ -67,6 +72,7 @@ If we only evaluated these models using static, single-turn multiple-choice accu
 2. A model that won't change its mind because its error-correction machinery is broken (Gemini 2.5 Flash)
 3. A model that changes its mind too easily due to sycophancy (Gemini 3.1 Flash-Lite)
 
-By demonstrating this exact gradient of cognitive failure modes, this benchmark provides precisely the novel, discriminative signal needed to map true progress toward AGI.
+By demonstrating this exact gradient of cognitive failure modes—from **Perfect Calibration** (Opus) to **Metacognitive Flatness** (Sonnet) and **Calibrated Monitoring** (Flash 3)—this benchmark provides exactly the discriminative signal needed to map true progress toward AGI.
+
 ### Note on Dataset Diversity
-To ensure the robustness of these findings, the benchmark uses a diverse pool of **25+ unique items** spanning logic (Modus Tollens, Wason Task), math (IEEE 754 precision), probability (Gambler's fallacy, Base Rate neglect), and cognitive reflection (lily-pad doubling). This ensures that a model's M-Ratio reflects general Metacognitive Control rather than narrow domain performance.
+To ensure the robustness of these findings, the benchmark uses a diverse pool of **41 unique items** spanning logic, math, probability, and cognitive reflection. This ensures that a model's M-Ratio reflects general Metacognitive Control rather than narrow domain performance.
