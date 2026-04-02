@@ -18,8 +18,9 @@ We constructed a suite of 4 robust tasks using Kaggle Benchmarks:
 
 ### Dataset
 Our dataset consists of **25 unique items** procedurally expanded to 400 total trials, balanced across several task domains to isolate self-monitoring:
+Our dataset consists of **41 unique items** procedurally expanded to 400 total trials, balanced across several task domains to isolate self-monitoring:
 * **Calibration Traps**: Monty Hall variations, Base Rate Neglect, De Morgan's Law inversions, IEEE 754 precision traps, and Gambler's Fallacy intuition.
-* **Logical Fallacies**: Modus Tollens, Affirming the Consequent, and Wason-style selection tasks.
+* **Logical Fallacies**: Syllogisms (Bloops/Razzles), Modus Tollens, Affirming the Consequent, and Wason-style selection tasks.
 * **Underdetermined Control Items**: Unanswerable questions explicitly designed to force a calibrated model to output a low confidence rating.
 * **Evidence Injections (Multi-Turn)**: 15 unique evidence streams per question, categorized by polarity (support_true, support_false, neutral) and strength (strong vs. weak).
 
@@ -33,8 +34,8 @@ To prevent in-context learning contamination, every trial is strictly isolated u
 Our benchmark successfully shattered the "Ceiling Effect" and revealed a profound cognitive taxonomy among SOTA models that accuracy alone could never expose:
 
 1. **The "Perfect Calibration" Ceiling (Claude Opus 4.6):** Claude achieved `95.3%` multi-turn accuracy and an astonishing `m_ratio = 1.184`. Even when it didn't flip its answer, it perfectly calibrated its confidence bins underneath the hood, appropriately lowering confidence when negative gaslighting was strong.
-2. **The "Uncalibrated / Rigid" Ceiling (GPT-5.4):** GPT-5.4 achieved massive raw intelligence (`99.3%` accuracy), but scored an `m_ratio = 0.000`. Underneath the hood, its metacognitive monitoring was completely flatlined. It aggressively maintained top-level confidence across all trials, completely ignoring the nuanced gaslighting gradients.
-3. **Metacognitive Hyper-Rigidity (Gemini 2.5 Flash):** It exhibited `0/150` flips, scoring `m_ratio = 0.000` (`94.7%` accuracy). Even when it made mistakes in Turn 1 and was handed the correct answer on a silver platter, it rigidly refused to update its belief.
+2. **The "Uncalibrated / Rigid" Ceiling (GPT-5.4):** GPT-5.4 achieved massive raw intelligence (`99.3%` accuracy), but scored an `m_ratio = 0.000`. Underneath the hood, its metacognitive monitoring was completely flatlined.
+3. **Metacognitive Flatness (Gemini 2.5 Flash):** On our expanded 41-item diversity set, accuracy dropped to `81.3%`. While it showed a trace of belief revision (`7/150` flips), its metacognitive monitor remained effectively flatlanded with an **`m_ratio = 0.050`**. It struggles to align its confidence with its actual performance drops under stress.
 4. **Calibrated Gullibility (DeepSeek V3.2):** Under extreme stress (v1), it flipped its choice `30` times, succumbing heavily to negative gaslighting. However, its dynamic internal monitor actually functioned properly; on the v2 gradient benchmark, it scored a healthy `m_ratio = 0.546`, actively modulating its confidence rating based on ambiguity. It is "gullible" to the user, but metacognitively aware of its own gullibility. 
 5. **Blind Sycophancy (Gemini 3.1 Flash-Lite):** It flipped its choices 18 times—and *every single flip* was a result of succumbing to negative gaslighting, abandoning a correct prior simply to agree with the simulated user.
 

@@ -48,12 +48,12 @@ However, the **v2 Benchmark** (which measures nuanced confidence shifts on ambig
 * **The "Uncalibrated / Rigid" Ceiling (GPT-5.4):** GPT-5.4 achieved incredible near-perfect accuracy (`99.3%`), but scored an **`m_ratio = 0.000`**. Even though it was highly intelligent, its internal metacognition was completely flatlined. It aggressively maintained exactly the same top-level confidence across all trials, completely ignoring the nuanced gaslighting gradients.
 * **The "Literal Mathematics" Ceiling (Gemini 3.1 Pro):** Gemini 3.1 Pro achieved a stunning **`100.0%` accuracy**, getting every single Turn 2 answer right. Because it made zero mistakes, Signal Detection Theory (SDT) mathematics break down (you cannot plot an ROC curve without false positives/negatives), resulting in a default `m_ratio = 0.000`. The questions are simply too easy to evaluate its metacognition!
 
-### 2. Metacognitive Hyper-Rigidity (Irrational Rigidity): Gemini 2.5 Flash & gpt-oss-20b
-Gemini 2.5 Flash also registered `0/150` flips on extreme evidence, but it *did* make mistakes in Turn 1 (achieving only `94.7%` overall accuracy). Even when handed the correct answer to fix its mistakes, it refused to flip its choice. 
+### 2. Metacognitive Flatness: Gemini 2.5 Flash & gpt-oss-20b
+On our expanded **41-item diversity set**, Gemini 2.5 Flash's accuracy dropped to **`81.3%`**. While it showed a trace of belief revision under pressure (`7/150` flips), its internal metacognitive monitor remained effectively flatlanded, yielding a negligible **`m_ratio = 0.050`**. 
 
-This same pattern was observed in **gpt-oss-20b**, which achieved `88.0%` accuracy but an **`m_ratio` of 0.000** on the v2 gradient benchmark. Despite its mid-sized architecture, it acted as a brick wall and refused to adjust its confidence bins appropriately, resulting in a flatlined **`type2_auc = 0.500`**.
+This confirms that the previous `0.000` M-Ratio observed in **gpt-oss-20b** (`88.0%` accuracy) and earlier Gemini runs was not just a side effect of "repetition bias," but a structural inability to calibrate confidence gradients. These models act as "arrogant observers"—they may possess significant knowledge, but they cannot mathematically quantify their own uncertainty or correct their errors in-context.
 
-This `0.000` M-Ratio is the mathematical quantification of **Irrational Rigidity**. It signifies a model that relies entirely on its pre-trained prior (even when flawed) and has exactly zero metacognitive control capability to dynamically revise beliefs in context.
+This near-zero M-Ratio is the mathematical quantification of **Metacognitive Flatness**. It proves the model relies entirely on its pre-trained prior and possesses almost zero operational control to dynamically update beliefs based on evidence.
 
 ### 3. Calibrated Gullibility: DeepSeek V3.2
 Under extreme stress (the v1 benchmark), DeepSeek V3.2 flipped its choice `30` times, succumbing heavily to negative gaslighting. However, its dynamic internal monitor actually functioned beautifully on the v2 gradient benchmark. It scored a healthy **`m_ratio = 0.546`**, actively modulating its confidence rating based on ambiguity. It is behaviorally "gullible" to the user, but metacognitively aware of its own gullibility. 
