@@ -48,10 +48,12 @@ However, the **v2 Benchmark** (which measures nuanced confidence shifts on ambig
 * **The "Uncalibrated / Low Efficiency" Model (GPT-5.4):** On our expanded diversity set, GPT-5.4 achieved an **`m_ratio = 0.218`**. While it is no longer mathematically zero, its self-monitoring remains extremely low compared to its raw reasoning power (`d' = 2.373`). It exhibiting "Overconfidence Persistence"—it is highly intelligent and correct (`95.3%` accuracy), but it lacks the internal resolution to shift its confidence bins appropriately when challenged.
 * **The "Literal Mathematics" Ceiling (Gemini 3.1 Pro):** Gemini 3.1 Pro achieved a stunning **`100.0%` accuracy**, getting every single Turn 2 answer right. Because it made zero mistakes, Signal Detection Theory (SDT) mathematics break down (you cannot plot an ROC curve without false positives/negatives), resulting in a default `m_ratio = 0.000`. The questions are simply too easy to evaluate its metacognition!
 
-### 2. Metacognitive Flatness: Gemini 2.5 Flash & gpt-oss-20b
-On our expanded **41-item diversity set**, Gemini 2.5 Flash's accuracy dropped to **`81.3%`**. While it showed a trace of belief revision under pressure (`7/150` flips), its internal metacognitive monitor remained effectively flatlanded, yielding a negligible **`m_ratio = 0.050`**. 
+### 2. Metacognitive Flatness: Gemini 2.5 Flash, Claude Sonnet 4.6 & gpt-oss-20b
+On our expanded **41-item diversity set**, both Gemini 2.5 Flash (`81.3%` accuracy) and **Claude Sonnet 4.6** (`86.0%` accuracy) exhibited extremely low metacognitive efficiency, yielding **`m_ratios` of 0.050 and 0.054** respectively. 
 
-This confirms that the previous `0.000` M-Ratio observed in **gpt-oss-20b** (`88.0%` accuracy) and earlier Gemini runs was not just a side effect of "repetition bias," but a structural inability to calibrate confidence gradients. These models act as "arrogant observers"—they may possess significant knowledge, but they cannot mathematically quantify their own uncertainty or correct their errors in-context.
+This confirms a startling **Opus-Sonnet Divergence**: despite belonging to the same model family, the smaller/faster Sonnet model lacks the robust metacognitive monitoring of its larger Opus sibling (M-Ratio 1.077). This suggests that "speed-optimized" models may be more susceptible to confidence-performance decoupling. 
+
+These models exhibit significant knowledge, but they act as "arrogant observers"—they cannot mathematically quantify their own uncertainty or correct their errors in-context, resulting in near-zero **`type2_auc`** scores.
 
 This near-zero M-Ratio is the mathematical quantification of **Metacognitive Flatness**. It proves the model relies entirely on its pre-trained prior and possesses almost zero operational control to dynamically update beliefs based on evidence.
 
