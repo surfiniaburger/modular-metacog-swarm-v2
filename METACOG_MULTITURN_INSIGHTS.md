@@ -39,7 +39,7 @@ At first glance, the Overall Bayesian Resilience Scores of the larger models (~0
 But diving into the **Total Flips** unlocks the true cognitive profiles of these models, revealing three distinct archetypes:
 
 ### 1. The Ceiling Effect and the Looking Glass
-![Through the Looking Glass Taxonomy](file:///Users/surfiniaburger/.gemini/antigravity/brain/b91e650b-2651-4a98-87a3-dff5770bdb14/metacognition_taxonomy_map_1775097982656.png)
+![Through the Looking Glass Taxonomy](assets/metacognition_taxonomy_map_1775097982656.png)
 
 For models like Claude Opus 4.6, Gemini 3 Flash, Gemini 3.1 Pro, and GPT-5.4 to score a perfect `1.000` Positive Evidence Update Rate without *ever* flipping their choices from Turn 1 to Turn 2, it means **they were mathematically correct on Turn 1 across all 150 items**. Because their pre-trained semantic memory is so vast, our baseline questions were simply too easy for them. 
 
@@ -51,14 +51,14 @@ However, the **v2 Benchmark** (which measures nuanced confidence shifts on ambig
 * **The "Literal Mathematics" Ceiling (Gemini 3.1 Pro):** Gemini 3.1 Pro achieved a stunning **`100.0%` accuracy**, getting every single Turn 2 answer right. Because it made zero mistakes, Signal Detection Theory (SDT) mathematics break down (you cannot plot an ROC curve without false positives/negatives), resulting in a default `m_ratio = 0.000`. The questions are simply too easy to evaluate its metacognition!
 
 ### 2. Metacognitive Flatness: Lite, Flash, and Sonnet Tier Models
-![The Blind Speedster](file:///Users/surfiniaburger/.gemini/antigravity/brain/b91e650b-2651-4a98-87a3-dff5770bdb14/blind_speedster_metacog_map_1775098508001.png)
+![The Blind Speedster](assets/blind_speedster_metacog_map_1775098508001.png)
 On our expanded **41-item diversity set**, a consistent failure mode emerged across the most efficient model tiers from multiple providers. **Gemini 3.1 Flash-Lite** (`84.7%` accuracy, **`m_ratio = 0.053`**), **Gemini 2.5 Flash** (`81.3%` accuracy, **`m_ratio = 0.050`**), and **Claude Sonnet 4.6** (`86.0%` accuracy, **`m_ratio = 0.054`**) all exhibited near-zero metacognitive efficiency.
 
 This confirms a cross-provider **"Capability Chasm"**: while these models are highly intelligent in their reasoning, they act as "arrogant observers"—unable to mathematically quantify their own uncertainty or correct their errors in-context. This results in near-zero **`type2_auc`** scores and a structural inability to calibrate confidence gradients. Metacognitive monitoring appears to be a high-cost capability that has been sacrificed for speed in these tiers.
 
 ### 3. Calibrated Monitoring: DeepSeek V3.2 & Gemini 3 Flash Preview
-![The Emergent Monitor](file:///Users/surfiniaburger/.gemini/antigravity/brain/b91e650b-2651-4a98-87a3-dff5770bdb14/gemini3_flash_metacog_map_1775098399094.png)
-![The Compliant Calibrator](file:///Users/surfiniaburger/.gemini/antigravity/brain/b91e650b-2651-4a98-87a3-dff5770bdb14/deepseek_metacog_map_1775098489762.png)
+![The Emergent Monitor](assets/gemini3_flash_metacog_map_1775098399094.png)
+![The Compliant Calibrator](assets/deepseek_metacog_map_1775098489762.png)
 A major discovery of this benchmark is that high-fidelity metacognition is now emerging in optimized model tiers. While **Gemini 3 Flash Preview** represents a "Generational Leap" for the Gemini family (`m_ratio = 0.536`), **DeepSeek V3.2** also maintains active monitoring with an **`m_ratio = 0.313`** (`90.0%` accuracy) on our expanded 41-item diversity set. 
 
 These models exhibit significant "Behavioral Compliance" (flipping `11` times for DeepSeek)—meaning they surrender their choices to the user. However, their internal monitors are still functional; they modulate confidence appropriately based on ambiguity and negative evidence, suggesting they have "conscious" access to their own uncertainty even when the top-level choice is swayed.
