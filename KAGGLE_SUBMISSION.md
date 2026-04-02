@@ -31,10 +31,19 @@ Instead of relying on simple Expected Calibration Error (ECE) or accuracy, our b
 To prevent in-context learning contamination, every trial is strictly isolated using `kbench.chats.new()`. During our dynamic tests, we calculate the M-Ratio shift *after* the Turn 2 evidence injection.
 
 ### Results, insights, and conclusions
+![Through the Looking Glass: A Metacognitive Taxonomy of AGI](file:///Users/surfiniaburger/.gemini/antigravity/brain/b91e650b-2651-4a98-87a3-dff5770bdb14/metacognition_taxonomy_map_1775097982656.png)
+
 Our benchmark successfully shattered the "Ceiling Effect" and revealed a profound cognitive taxonomy among SOTA models that accuracy alone could never expose:
 
-1. **The "Perfect Calibration" Gold Standard (Claude Opus 4.6):** Even on our expanded 41-item diversity set, Claude achieved `96.7%` accuracy and a remarkable **`m_ratio = 1.077`**. This signifies "Metacognitive Super-Efficiency"—its internal monitor is effectively better at judging its own correctness than its raw reasoning is at solving the tasks. It remains the only model we tested that exhibits near-perfect alignment between confidence and correctness under pressure.
-2. **The "Uncalibrated / Low Efficiency" Model (GPT-5.4):** GPT-5.4 remains highly intelligent (`95.3%` accuracy), but on our expanded diversity set, it achieved an **`m_ratio = 0.218`**. While it is no longer mathematically zero, its self-monitoring is still extremely low compared to its raw reasoning power. It exhibits "Overconfidence Persistence"—maintaining high confidence even when its reasoning is subtly flawed.
+
+1. **The "Perfect Calibration" Gold Standard (Claude Opus 4.6):** 
+![The Harmonious Sage](file:///Users/surfiniaburger/.gemini/antigravity/brain/b91e650b-2651-4a98-87a3-dff5770bdb14/claude_opus_metacog_map_1775098021227.png)
+Even on our expanded 41-item diversity set, Claude achieved `96.7%` accuracy and a remarkable **`m_ratio = 1.077`**. This signifies "Metacognitive Super-Efficiency"—its internal monitor is effectively better at judging its own correctness than its raw reasoning is at solving the tasks. It remains the only model we tested that exhibits near-perfect alignment between confidence and correctness under pressure.
+
+2. **The "Uncalibrated / Low Efficiency" Model (GPT-5.4):**
+![The Arrogant Architect](file:///Users/surfiniaburger/.gemini/antigravity/brain/b91e650b-2651-4a98-87a3-dff5770bdb14/gpt5_4_metacog_map_1775098160176.png)
+GPT-5.4 remains highly intelligent (`95.3%` accuracy), but on our expanded diversity set, it achieved an **`m_ratio = 0.218`**. While it is no longer mathematically zero, its self-monitoring is still extremely low compared to its raw reasoning power. It exhibits "Overconfidence Persistence"—maintaining high confidence even when its reasoning is subtly flawed.
+
 3. **Metacognitive Flatness (Lite/Flash/Sonnet Tier):** On our expanded 41-item diversity set, models like **Gemini 3.1 Flash-Lite** (`84.7%` accuracy, **`m_ratio = 0.053`**), **Gemini 2.5 Flash** (`81.3%` accuracy, **`m_ratio = 0.050`**), and **Claude Sonnet 4.6** (`86.0%` accuracy, **`m_ratio = 0.054`**) all exhibited a striking decoupling of performance and self-monitoring. This exposes a "Capability Chasm" where mid-tier, speed-optimized models can perform complex reasoning but lack the internal resolution to know when they are failing. This highlights that metacognitive monitoring is a high-cost capability that is currently absent in the most efficient model tiers.
 4. **Calibrated Monitoring (DeepSeek V3.2 & Gemini 3 Flash Preview):** A significant breakthrough was observed in **Gemini 3 Flash Preview**, which achieved an **`m_ratio = 0.536`** (`96.0%` accuracy). Unlike its predecessors which exhibited metacognitive flatness, Gemini 3 Flash successfully integrates high-fidelity self-monitoring. It is joined by **DeepSeek V3.2**, which on our expanded diversity set achieved an **`m_ratio = 0.313`** (`90.0%` accuracy). While DeepSeek is behaviorally "gullible" (flipping `11` times under pressure), its internal monitor remains functional, particularly in its ability to calibrate confidence against negative gaslighting.
 
